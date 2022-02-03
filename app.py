@@ -1,13 +1,20 @@
-import tkinter as tk, requests, serial,time, re
+import tkinter as tk, requests, serial,time, re, os
 from xml.etree import ElementTree
 from tkinter import messagebox
 from PIL import ImageTk,Image 
 from datetime import datetime
-
-
+from threading import Timer
+####Configuración inicial del programa   ##################################
 window = tk.Tk()
 #window.attributes("-fullscreen", True)
 window.geometry("770x480")
+
+def ejemplo():
+    print("Hola")
+
+r = Timer(3.0, ejemplo)
+r.start()
+r.cancel()
 global filtro, cantidad_escaneo, modelo
 error = 0
 filtro = 0
@@ -17,6 +24,7 @@ cantidad_escaneo = 0
 mensaje = ""
 modelo = ""
 
+###Método con todo el diseño de la interfaz principal ##################################
 def iniciar():
     global datos_entrada, campo_informacion, ventanaPrincipal
     global boton_uno, boton_dos, boton_tres, boton_cuatro, cantidad_seleccion
@@ -26,11 +34,13 @@ def iniciar():
     ventanaPrincipal = tk.Frame(window)
     ventanaPrincipal.pack(fill="both", expand="yes")
 
+    ### Tamaño de los números de los botones, su ancho y espacio en Y y X ##################################
     numero_size = ("arial", 33)
     ancho_boton = 5
     espacio_botonx = 5
     espacio_botony = 5
     
+    ### Creando las variables de botones como null ##################################
     boton_uno = boton_dos = boton_tres = boton_cuatro = None
 
     botonFrame = tk.Frame(ventanaPrincipal)
@@ -41,6 +51,7 @@ def iniciar():
     filaDos = tk.Frame(botonFrame)
     filaDos.pack()
 
+    ###Botones de selección de imágenes de PARAMETRIC ##################################
     boton_uno = tk.Button(filaUno, text= "1", font = numero_size, width = ancho_boton, 
         command = lambda: seleccionEscaneo(boton_uno, reset= True ) )
     boton_uno.pack(side = tk.LEFT, padx = espacio_botonx, pady = espacio_botony)
@@ -58,21 +69,22 @@ def iniciar():
     boton_cuatro.pack(side = tk.LEFT, padx = espacio_botonx, pady = espacio_botony)
 
 
+    ###Botón ALL: habilita todos los botones de selección ##################################
     boton_all = tk.Button(ventanaPrincipal, text= "ALL", font =  ("arial", 25), width = 10, bg = "SeaGreen1",
         command = lambda: seleccionEscaneo(all = True, reset= True ) )
-    boton_all.place(x = 20, y = 15)#.pack(padx = espacio_botonx, pady = espacio_botony)
-
+    boton_all.place(x = 20, y = 15)
+    ###Botón CLEAR: deshabilita todos los botones de selección ##################################
     boton_clear = tk.Button(ventanaPrincipal, text= "CLEAR", font =  ("arial", 25), width = 10, bg = "SkyBlue1",
         command = lambda: seleccionEscaneo(clear = True, reset= True))
-    boton_clear.place(x = 570, y = 15)#.pack(padx = espacio_botonx, pady = 20)
-
-    boton_ok = tk.Button(ventanaPrincipal, text= "CONF", font =  ("arial", 25), width = 10, bg = "grey",
+    boton_clear.place(x = 570, y = 15)
+    ###Botón CONF: modo soporte, para configuración del programa, usar teclado o teclas ##################################
+    boton_conf = tk.Button(ventanaPrincipal, text= "CONF", font =  ("arial", 25), width = 10, bg = "grey",
         command = ventanaPassword )
-    boton_ok.place(x = 20, y = 100)#.pack(padx = espacio_botonx, pady = espacio_botony)
-
-    boton_reset = tk.Button(ventanaPrincipal, text= "OK", font =  ("arial", 25), width = 10, height = 2,bg = "SkyBlue1",
+    boton_conf.place(x = 20, y = 100)
+    ###Botón OK: para cerrar ventana emergente. Llama a función que envía un dato por com serial al arduino para enviar un Enter ####
+    boton_ok = tk.Button(ventanaPrincipal, text= "OK", font =  ("arial", 25), width = 10, height = 2,bg = "SkyBlue1",
         command = lambda: enviarDatos("OK"))
-    boton_reset.place(x = 570, y = 80)#.pack(padx = espacio_botonx, pady = 20)
+    boton_ok.place(x = 570, y = 80)
 
 
     serialFrame = tk.Frame(ventanaPrincipal)
@@ -99,7 +111,7 @@ def iniciar():
     campo_informacion = tk.Text(respuestaFrame, width = 75, height = 7, font =("arial", 14))
     campo_informacion["state"] = "disabled"
     campo_informacion.pack()
-    
+    ### Configuro los botones en color verde, que el programa entiende como habilitados
     boton_uno["bg"] = boton_dos["bg"] = boton_tres["bg"] = boton_cuatro["bg"] = "green"
 
     
@@ -112,9 +124,10 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
     cantidad = 0
     serialesArr = []
     mensaje_serial = ""
+
     limpiarCampo()
     modelo = ""
-
+    
     if reset == True:
         
         if all == True:
@@ -175,6 +188,7 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
             cantidad_escaneo = 0
             confirmacion(mensaje_serial)
         if error == 1:
+            datos_entrada.focus()
             campo_informacion["state"] = "normal"
             campo_informacion.insert(tk.INSERT, "Una o más de las unidades no lleva el flujo correcto. Verifica el historial" )
             campo_informacion["bg"] = "red"
@@ -187,19 +201,39 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
             
 
             
-           
+def reiniciarAsync():
+    print("Funcion reiniciar")
+    seleccionEscaneo(reset=1)
 
 def retenerSeriales(event, serial):
-    global cantidad_escaneo, serialesArr, datos_entrada, serialesArr2, serialesArr3, filtro, mensaje, modelo, error
+    global cantidad_escaneo, serialesArr, datos_entrada, seriales2DArray, serialesMasterArray, filtro, mensaje, modelo, error, tiempoReinicio
     if serial == "":
         return
     if cantidad_escaneo <= cantidad:
-        serialesArr2 = []
-        serialesArr3 = []
-        serialesArr.append(serial)
+        seriales2DArray = []
+        serialesMasterArray = []
         cantidad_escaneo += 1
         texto_seleccion = str(cantidad_escaneo) + "/" + str (cantidad)
         cantidad_seleccion["text"] = texto_seleccion
+        limpiarCampo()
+        if cantidad_escaneo == 1:
+            try:
+                if tiempoReinicio.is_alive():
+                    tiempoReinicio.cancel()
+                    
+         
+            except: 
+                pass
+            tiempoReinicio = Timer(20.0, reiniciarAsync)
+            tiempoReinicio.start()
+        
+
+        if serial in serialesArr:
+            error = 1
+            seleccionEscaneo(reset=  1, mensaje = "Uno de los seriales es repetido\n")
+            
+            return
+        serialesArr.append(serial)
         try:
             datos_entrada.delete('0', 'end')
             
@@ -222,12 +256,13 @@ def retenerSeriales(event, serial):
                 return
             print(modelo)
             if len(serialesArr) == cantidad:
+                tiempoReinicio.cancel()
                 mensaje = ""
-                print(cantidad)
-                print(serialesArr)
                 datos_entrada["state"] = "disabled"
+                window.focus()
                 #datos_entrada.mainloop()
                 window.update()
+                print("entre")
                 getGolden(serialesArr)
         except Exception as e: 
             print(e)
@@ -314,7 +349,6 @@ def toMaster(serial_2d):
 
     except:    
         
-        print("aqui no entre")
         url = "http://mxgdlm0webte02//OkToTesterWebServiceInterface/OkToTesterWebServiceInterface.asmx"
 
         headers = {"Content-Type" : "application/soap+xml; charset=utf-8"}
@@ -337,8 +371,8 @@ def toMaster(serial_2d):
     
         serialrespuesta = xmlmes2d[0][0][0].text
 
-    serialesArr2.append(serial_2d)
-    serialesArr3.append(serialrespuesta)
+    seriales2DArray.append(serial_2d)
+    serialesMasterArray.append(serialrespuesta)
     
     if serialrespuesta == "Serial Linked Not Founded" and filtro == 0:
 
@@ -346,8 +380,8 @@ def toMaster(serial_2d):
         filtro = 1
         datos_entrada["state"] = "normal"
         seleccionEscaneo(reset=1)
-    if len(serialesArr2) == cantidad and filtro == 0:
-        for i, j in zip(serialesArr2, serialesArr3):
+    if len(seriales2DArray) == cantidad and filtro == 0:
+        for i, j in zip(seriales2DArray, serialesMasterArray):
             okToTest(i, j)
     return
 
@@ -384,6 +418,8 @@ def okToTest(serial_2d, serial_master):
         isTimeOK = testtime(tiempoprueba)
         print(isTimeOK)
 
+    
+
         if paso == "MDA" and status == "Pass" and isTimeOK[2] == True:
             respuesta_programa = "Se puede probar"
             campo_informacion["bg"] = "white"
@@ -396,14 +432,16 @@ def okToTest(serial_2d, serial_master):
                 else:
                     respuesta_programa = "Último dato: " + paso
             error = 1
-        
+        if revisarSerialesBloqueados(serial_2d) == 0:
+            respuesta_programa =  "Esta unidad ya fue escaneada. Debe esperar para volver a probar"
+            error = 1
+  
 
         #respuesta_historial =  paso + " " + status 
         mensaje += serial_2d + " " + respuesta_programa + "\n"
         filtro2 += 1
         
         if filtro2 == cantidad:
-            
             
             seleccionEscaneo(mensaje = "[MODELO: " + modelo + "]\n" + mensaje)
         
@@ -417,10 +455,12 @@ def okToTest(serial_2d, serial_master):
 def enviarDatos(datos):
     print(datos)
     try:
-        ser = serial.Serial('/dev/ttyAMA0',9600)  
-        ser.write(datos.encode())
-        ser.close()
+        # ser = serial.Serial('/dev/ttyAMA0',9600)  
+        # ser.write(datos.encode())
+        # ser.close()
         cerrarVentana()
+        datos_entrada.focus()
+        bloquearSeriales()
     except Exception as e:
         print('Ocurrió un error al tratar de enviar datos por el puerto '+ str(e))
     
@@ -444,8 +484,11 @@ def confirmacion(mensaje):
     avisoLabel.place(x= 20, y = 10)
 
 
-
-    imgdb = ImageTk.PhotoImage(Image.open("imagen/fixture.png").resize((300, 250)))
+    try:
+        imgdb = ImageTk.PhotoImage(Image.open("imagen/fixture.png").resize((300, 250)))
+    except:
+        imgdb = ImageTk.PhotoImage(Image.open("/home/pi/Documents/ParametricV1.1/imagen/fixture.png").resize((300, 250)))
+        
     labeldb = tk.Label(ventanaConfirmar, image = imgdb)
     labeldb.place(x = 220, y = 90)
 
@@ -540,10 +583,18 @@ def panelDeControl():
 
 
     ############################################MENU##################################################vvv
-    imgFlechaAr = ImageTk.PhotoImage(Image.open("imagen/up.png").resize((70, 70)))
-    imgFlechaAb = ImageTk.PhotoImage(Image.open("imagen/down.png").resize((70, 70)))
-    imgFlechaD = ImageTk.PhotoImage(Image.open("imagen/right.png").resize((70, 70)))
-    imgFlechaI = ImageTk.PhotoImage(Image.open("imagen/left.png").resize((70, 70)))
+    try:
+
+        imgFlechaAr = ImageTk.PhotoImage(Image.open("imagen/up.png").resize((70, 70)))
+        imgFlechaAb = ImageTk.PhotoImage(Image.open("imagen/down.png").resize((70, 70)))
+        imgFlechaD = ImageTk.PhotoImage(Image.open("imagen/right.png").resize((70, 70)))
+        imgFlechaI = ImageTk.PhotoImage(Image.open("imagen/left.png").resize((70, 70)))
+    except: 
+        
+        imgFlechaAr = ImageTk.PhotoImage(Image.open("/home/pi/Documents/ParametricV1.1/imagen/up.png").resize((70, 70)))
+        imgFlechaAb = ImageTk.PhotoImage(Image.open("/home/pi/Documents/ParametricV1.1/imagen/down.png").resize((70, 70)))
+        imgFlechaD = ImageTk.PhotoImage(Image.open("/home/pi/Documents/ParametricV1.1/imagen/right.png").resize((70, 70)))
+        imgFlechaI = ImageTk.PhotoImage(Image.open("/home/pi/Documents/ParametricV1.1/imagen/left.png").resize((70, 70)))
 
     panelMenu =  tk.Frame(ventanaPanel, bg ="yellow")
     panelMenu.pack(side = tk.LEFT, fill = "y")
@@ -628,11 +679,15 @@ def cerrarVentana():
     texto_seleccion = "0" + "/" + str (cantidad)
     cantidad_seleccion["text"] = texto_seleccion
     serialesArr = []
+    datos_entrada.focus()
     limpiarCampo()
 
 def initConf():
     global modoESel, bloqueoSel
-    archivoconf = open('conf.conf', 'r')
+    try:
+        archivoconf = open('conf.conf', 'r')
+    except: 
+        archivoconf = open('/home/pi/Documents/ParametricV1.1/conf.conf', 'r')
     textosBtn = []
     while True:
         # Get next line from file
@@ -669,8 +724,10 @@ def testtime(tiempo):
     duracionminutos = duracionsegundos/60
 
     print(duracionminutos)
-
-    archivotexto = open('testtime.txt', 'r')
+    try:
+        archivotexto = open('testtime.txt', 'r')
+    except: 
+        archivotexto = open('/home/pi/Documents/ParametricV1.1/testtime.txt', 'r')
 
     resultado = []
     while True:
@@ -691,6 +748,69 @@ def testtime(tiempo):
     resultado = ["", "", True]
     archivotexto.close()
     return resultado
+
+def revisarSerialesBloqueados(serial):
+    puedeProbarse = 1
+    
+    try:
+        ruta = "serialesbloqueados.txt"
+        listaBloqueadostxt = open(ruta, "r")
+    except: 
+        ruta = "/home/pi/Documents/ParametricV1.1/serialesbloqueados.txt"
+        listaBloqueadostxt = open(ruta, "r")
+
+    
+    #listaBloqueadostxt.seek(0)
+    while True:
+        linea = listaBloqueadostxt.readline()
+        if not linea:
+            break
+        
+        if re.search(serial, linea):
+            
+            diferencia =  datetime.now() - datetime.fromisoformat(linea.split("#T")[1].strip())
+            diferenciasegundos = diferencia.total_seconds()
+            diferenciaminutos = int(diferenciasegundos/60)
+            print(diferenciaminutos)
+            print(diferenciaminutos<10)
+            if diferenciaminutos<10:
+                puedeProbarse = 0
+
+    
+    listaBloqueadostxt.close
+    return puedeProbarse
+
+def bloquearSeriales():
+    global seriales2DArray
+    arrayListaBloqueados = []
+    try:
+        ruta = "serialesbloqueados.txt"
+        listaBloqueadostxt = open(ruta, "r")
+    except: 
+        ruta = "/home/pi/Documents/ParametricV1.1/serialesbloqueados.txt"
+        listaBloqueadostxt = open(ruta, "r")
+    #os.remove(ruta)
+    arrayListaBloqueados = listaBloqueadostxt.readlines()
+    listaBloqueadostxt.close()
+
+    listaBloqueadostxt = open(ruta, "w")
+    for serial in seriales2DArray:
+        arrayListaBloqueados.append(serial+" #T"+ str(datetime.now())+"\n" )
+        print(arrayListaBloqueados)
+        if len(arrayListaBloqueados) > 10:
+            arrayListaBloqueados.pop(1)
+    listaBloqueadostxt.writelines(arrayListaBloqueados)
+    listaBloqueadostxt.close()
+
+            
+    
+    
+    
+    
+    
+
+
+
 
 iniciar()
 initConf()
