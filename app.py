@@ -9,16 +9,11 @@ window = tk.Tk()
 #window.attributes("-fullscreen", True)
 window.geometry("770x480")
 
-def ejemplo():
-    print("Hola")
 
-r = Timer(3.0, ejemplo)
-r.start()
-r.cancel()
 global filtro, cantidad_escaneo, modelo
 error = 0
 filtro = 0
-filtro2 = 0
+cantidadPasoFinal = 0
 
 cantidad_escaneo = 0
 mensaje = ""
@@ -111,23 +106,25 @@ def iniciar():
     campo_informacion = tk.Text(respuestaFrame, width = 75, height = 7, font =("arial", 14))
     campo_informacion["state"] = "disabled"
     campo_informacion.pack()
-    ### Configuro los botones en color verde, que el programa entiende como habilitados
+    ### Se configuran los botones en color verde, que el programa entiende como habilitados
     boton_uno["bg"] = boton_dos["bg"] = boton_tres["bg"] = boton_cuatro["bg"] = "green"
 
     
 
 
 
-
+###Se valida cada botón y si el programa está listo para enviar por comunicación serial
+###los datos al Arduino o si algun serial no pasó la prueba
 def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, mensaje  = ""):
-    global  error, cantidad, cantidad_escaneo, serialesArr, filtro2, modelo
+    global  error, cantidad, cantidad_escaneo, serialesArr, cantidadPasoFinal, modelo
     cantidad = 0
     serialesArr = []
     mensaje_serial = ""
 
     limpiarCampo()
     modelo = ""
-    
+    ###Si viene reset como True en los argumentos se reinicia el contador, y se limpia el campo respuesta
+    ###Además valida el si fue ALL o CLEAR los que accionaron el reset
     if reset == True:
         
         if all == True:
@@ -137,7 +134,7 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
         cantidad_escaneo = 0
         error = 0
         campo_informacion["bg"] = "white"
-        
+    ###Switchea el color del botón cada que se presiona
     if objeto != False:
         if objeto["bg"] == "green":
             objeto["bg"] = "grey"
@@ -147,7 +144,7 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
             objeto["activebackground"] = "green"
 
 
-
+    ###condicionales para asignar a mensaje_serial las imagenes habilitadas y deshabilitadas
     if boton_uno["bg"] == "green":
         cantidad = cantidad+1
         mensaje_serial += "1"
@@ -169,19 +166,23 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
     else:
         mensaje_serial += "0"
 
+    ###Si todos los botones están deshabilitados se deshabilita el campo de serial
     if mensaje_serial == "0000":
         datos_entrada["state"] = "disabled"
     else:
         datos_entrada["state"] = "normal"
     #print(cantidad)
 
+    ###Reinicio de contador
     texto_seleccion = "0" + "/" + str (cantidad)
     cantidad_seleccion["text"] = texto_seleccion
 
+    ###Se inserta el mensaje al campo de respuesta
     campo_informacion["state"] = "normal"
     campo_informacion.insert(tk.INSERT, mensaje)
     campo_informacion["state"] = "disabled"
     
+    ###Se valida si 
     if cantidad_escaneo == cantidad and cantidad != 0:
         if error == 0:
             
@@ -196,7 +197,7 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
             error = 0
             
             cantidad_escaneo = 0
-            filtro2 = 0
+            cantidadPasoFinal = 0
             
             
 
@@ -205,6 +206,7 @@ def reiniciarAsync():
     print("Funcion reiniciar")
     seleccionEscaneo(reset=1)
 
+###Todos los seriales ingresados deben entrar primero a esta función
 def retenerSeriales(event, serial):
     global cantidad_escaneo, serialesArr, datos_entrada, seriales2DArray, serialesMasterArray, filtro, mensaje, modelo, error, tiempoReinicio
     if serial == "":
@@ -386,7 +388,7 @@ def toMaster(serial_2d):
     return
 
 def okToTest(serial_2d, serial_master):
-    global  error, filtro2, mensaje, modelo
+    global  error, cantidadPasoFinal, mensaje, modelo
     print(serial_2d + " " + serial_master)
     
     url = "http://mxgdlm0tis01/MES-TIS/tis.asmx"
@@ -439,9 +441,9 @@ def okToTest(serial_2d, serial_master):
 
         #respuesta_historial =  paso + " " + status 
         mensaje += serial_2d + " " + respuesta_programa + "\n"
-        filtro2 += 1
+        cantidadPasoFinal += 1
         
-        if filtro2 == cantidad:
+        if cantidadPasoFinal == cantidad:
             
             seleccionEscaneo(mensaje = "[MODELO: " + modelo + "]\n" + mensaje)
         
@@ -467,8 +469,8 @@ def enviarDatos(datos):
 
         
 def confirmacion(mensaje):
-    global ventanaConfirmar, filtro2
-    filtro2 = 0
+    global ventanaConfirmar, cantidadPasoFinal
+    cantidadPasoFinal = 0
     ventanaPrincipal.pack_forget()
     ventanaConfirmar  = tk.Frame(window)
     ventanaConfirmar.pack(fill="both", expand="yes")
