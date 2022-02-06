@@ -9,12 +9,6 @@ window = tk.Tk()
 window.attributes("-fullscreen", True)
 #window.geometry("770x480")
 
-def ejemplo():
-    print("Hola")
-
-r = Timer(3.0, ejemplo)
-r.start()
-r.cancel()
 global filtro, cantidad_escaneo, modelo
 error = 0
 filtro = 0
@@ -201,9 +195,12 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
             
 
             
-def reiniciarAsync():
-    print("Funcion reiniciar")
-    seleccionEscaneo(reset=1)
+def timerFunc(opcionTimer):
+    if opcionTimer == "reinicio":
+        seleccionEscaneo(reset=1)
+    if  opcionTimer == "cerrar": 
+        cerrarVentana()
+        seleccionEscaneo(mensaje="Se agotó tiempo de espera en confirmación")
 
 def retenerSeriales(event, serial):
     global cantidad_escaneo, serialesArr, datos_entrada, seriales2DArray, serialesMasterArray, filtro, mensaje, modelo, error, tiempoReinicio
@@ -224,7 +221,7 @@ def retenerSeriales(event, serial):
          
             except: 
                 pass
-            tiempoReinicio = Timer(20.0, reiniciarAsync)
+            tiempoReinicio = Timer(20.0, timerFunc, ["reinicio"])
             tiempoReinicio.start()
         
 
@@ -454,6 +451,8 @@ def okToTest(serial_2d, serial_master):
 
 def enviarDatos(datos):
     print(datos)
+    global tiempoConfirmacion
+    tiempoConfirmacion.cancel()
     try:
         ser = serial.Serial('/dev/ttyAMA0',9600)  
         ser.write(datos.encode())
@@ -467,7 +466,7 @@ def enviarDatos(datos):
 
         
 def confirmacion(mensaje):
-    global ventanaConfirmar, filtro2
+    global ventanaConfirmar, filtro2, tiempoConfirmacion
     filtro2 = 0
     ventanaPrincipal.pack_forget()
     ventanaConfirmar  = tk.Frame(window)
@@ -483,6 +482,8 @@ def confirmacion(mensaje):
     avisoLabel = tk.Label(ventanaConfirmar, text = "CIERRA EL FIXTURE Y BAJA LA PALANCA.", font = ("arial", 25))
     avisoLabel.place(x= 20, y = 10)
 
+    tiempoConfirmar = Timer(10.0, timerFunc, ["cerrar"])
+    tiempoConfirmar.start()
 
     try:
         imgdb = ImageTk.PhotoImage(Image.open("imagen/fixture.png").resize((300, 250)))
@@ -731,7 +732,7 @@ def testtime(tiempo):
 
     resultado = []
     while True:
-        # Get next line from file
+        
         line = archivotexto.readline()
         if re.search(modelo + "=", line):
             minutosespera = line.split("=")[1]
