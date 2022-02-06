@@ -12,7 +12,7 @@ window.attributes("-fullscreen", True)
 global filtro, cantidad_escaneo, modelo
 error = 0
 filtro = 0
-filtro2 = 0
+cantidadPasoFinal = 0
 
 cantidad_escaneo = 0
 mensaje = ""
@@ -114,7 +114,7 @@ def iniciar():
 
 
 def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, mensaje  = ""):
-    global  error, cantidad, cantidad_escaneo, serialesArr, filtro2, modelo
+    global  error, cantidad, cantidad_escaneo, serialesArr, cantidadPasoFinal, modelo
     cantidad = 0
     serialesArr = []
     mensaje_serial = ""
@@ -190,7 +190,7 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
             error = 0
             
             cantidad_escaneo = 0
-            filtro2 = 0
+            cantidadPasoFinal = 0
             
             
 
@@ -383,7 +383,7 @@ def toMaster(serial_2d):
     return
 
 def okToTest(serial_2d, serial_master):
-    global  error, filtro2, mensaje, modelo
+    global  error, cantidadPasoFinal, mensaje, modelo
     print(serial_2d + " " + serial_master)
     
     url = "http://mxgdlm0tis01/MES-TIS/tis.asmx"
@@ -436,9 +436,9 @@ def okToTest(serial_2d, serial_master):
 
         #respuesta_historial =  paso + " " + status 
         mensaje += serial_2d + " " + respuesta_programa + "\n"
-        filtro2 += 1
+        cantidadPasoFinal += 1
         
-        if filtro2 == cantidad:
+        if cantidadPasoFinal == cantidad:
             
             seleccionEscaneo(mensaje = "[MODELO: " + modelo + "]\n" + mensaje)
         
@@ -450,8 +450,8 @@ def okToTest(serial_2d, serial_master):
         datos_entrada["state"] = "normal"
 
 def confirmacion(mensaje):
-    global ventanaConfirmar, filtro2, tiempoConfirmar
-    filtro2 = 0
+    global ventanaConfirmar, cantidadPasoFinal, tiempoConfirmar
+    cantidadPasoFinal = 0
     ventanaPrincipal.pack_forget()
     ventanaConfirmar  = tk.Frame(window)
     ventanaConfirmar.pack(fill="both", expand="yes")
