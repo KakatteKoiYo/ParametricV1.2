@@ -6,8 +6,8 @@ from datetime import datetime
 from threading import Timer
 ####Configuración inicial del programa   ##################################
 window = tk.Tk()
-window.attributes("-fullscreen", True)
-#window.geometry("770x480")
+#window.attributes("-fullscreen", True)
+window.geometry("770x480")
 
 global filtro, cantidad_escaneo, modelo
 error = 0
@@ -275,7 +275,7 @@ def limpiarCampo():
 def getGolden(array):
 
     try: 
-        errorGolden = 0
+        #errorGolden = 0
         url = "http://mxgdlm0webte02/OkToTesterWebServiceInterface/OkToTesterWebServiceInterface.asmx"
 
         headers = {"Content-Type" : "text/xml; charset=utf-8"}
@@ -300,26 +300,29 @@ def getGolden(array):
         goldentxt = xmlgolden[0][0][0].text
         for i in array:
             if re.search(i, goldentxt):
-                pass
+                toMaster(i, isGolden= 1)
             else:
-                errorGolden = 1
-        if errorGolden == 1:
-            for i in array:
                 toMaster(i)
-        else:
-            seleccionEscaneo(mensaje = "GOLDEN TEST")
+        # if errorGolden == 1:
+        #     for i in array:
+                
+        # else:
+        #     seleccionEscaneo(mensaje = "GOLDEN TEST")
     except Exception as e: 
       print(e)
 
 
-def toMaster(serial_2d):
+def toMaster(serial_2d, isGolden = 0):
     global filtro
     
-
+    print("Valor de isGolden: " + str(isGolden))
     try:
         if len(serial_2d) < 12:
             raise Exception("Longitud de serial no valida")
         else:
+            if isGolden == 1:
+                raise Exception()
+            
             url = "http://mxgdlm0webte02/wsMesInterface/MesWebServiceInterface.asmx"
 
             headers = {"Content-Type" : "text/xml; charset=utf-8"}
@@ -379,11 +382,14 @@ def toMaster(serial_2d):
         seleccionEscaneo(reset=1)
     if len(seriales2DArray) == cantidad and filtro == 0:
         for i, j in zip(seriales2DArray, serialesMasterArray):
-            okToTest(i, j)
+            okToTest(i, j, isGolden)
     return
 
-def okToTest(serial_2d, serial_master):
-    global  error, cantidadPasoFinal, mensaje, modelo
+
+def okToTest(serial_2d, serial_master, isGolden):
+    global  error, cantidadPasoFinal, mensaje, modelo, isGoldenGlobal
+    
+    isGoldenGlobal = isGolden
     print(serial_2d + " " + serial_master)
     
     url = "http://mxgdlm0tis01/MES-TIS/tis.asmx"
@@ -416,23 +422,33 @@ def okToTest(serial_2d, serial_master):
         print(isTimeOK)
 
     
+        if isGolden == 1:
+            if paso == "MDA" and status == "Fail":
+                respuesta_programa = "Golden fallada en MDA. No puede probarse"
+                error = 1
+                
+            else: 
+                respuesta_programa = "Se puede probar"
+                campo_informacion["bg"] = "white"
 
-        if paso == "MDA" and status == "Pass" and isTimeOK[2] == True:
-            respuesta_programa = "Se puede probar"
-            campo_informacion["bg"] = "white"
         else:
-            if isTimeOK[2] == False:
-                respuesta_programa = "Necesario: "+isTimeOK[0].strip()+" min. Se probó hace: " + isTimeOK[1] + " min"
+            if paso == "MDA" and status == "Pass" and isTimeOK[2] == True:
+                respuesta_programa = "Se puede probar"
+                campo_informacion["bg"] = "white"
             else:
-                if status == "Fail":
-                    respuesta_programa = "Unidad fallada en paso: " + paso
+                if isTimeOK[2] == False:
+                    respuesta_programa = "Necesario: "+isTimeOK[0].strip()+" min. Se probó hace: " + isTimeOK[1] + " min"
                 else:
-                    respuesta_programa = "Último dato: " + paso
-            error = 1
-        if revisarSerialesBloqueados(serial_2d) == 0:
-            respuesta_programa =  "Esta unidad ya fue escaneada. Debe esperar para volver a probar"
-            error = 1
-  
+                    if status == "Fail":
+                        respuesta_programa = "Unidad fallada en paso: " + paso
+                    else:
+                        respuesta_programa = "Último dato: " + paso
+                error = 1
+            
+            if revisarSerialesBloqueados(serial_2d) == 0:
+                respuesta_programa =  "Esta unidad ya fue escaneada. Debe esperar 10 min para volver a probarla"
+                error = 1
+        
 
         #respuesta_historial =  paso + " " + status 
         mensaje += serial_2d + " " + respuesta_programa + "\n"
@@ -486,15 +502,15 @@ def confirmacion(mensaje):
 
 def enviarDatos(datos):
     print(datos)
-    global tiempoConfirmar
-    tiempoConfirmar.cancel()
     try:
-        ser = serial.Serial('/dev/ttyAMA0',9600)  
-        ser.write(datos.encode())
-        ser.close()
+        # ser = serial.Serial('/dev/ttyAMA0',9600)  
+        # ser.write(datos.encode())
+        # ser.close()
         cerrarVentana()
         datos_entrada.focus()
-        bloquearSeriales()
+        print("GoldenGLobal = " + str(isGoldenGlobal))
+        if isGoldenGlobal == 0:
+            bloquearSeriales()
     except Exception as e:
         print('Ocurrió un error al tratar de enviar datos por el puerto '+ str(e))
 
@@ -672,6 +688,8 @@ def panelDeControl():
 
 def cerrarVentana():
     global filtro, cantidad_escaneo, cantidad, serialesArr
+    global tiempoConfirmar
+    tiempoConfirmar.cancel()
     ventanaConfirmar.pack_forget()
     ventanaPrincipal.pack(fill="both", expand="yes")
     cantidad_escaneo  = 0
