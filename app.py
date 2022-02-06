@@ -449,24 +449,8 @@ def okToTest(serial_2d, serial_master):
         messagebox.showinfo(title="ERROR", message="Ocurrió un error\n Verifique el serial. " + str(e) )
         datos_entrada["state"] = "normal"
 
-def enviarDatos(datos):
-    print(datos)
-    global tiempoConfirmacion
-    tiempoConfirmacion.cancel()
-    try:
-        ser = serial.Serial('/dev/ttyAMA0',9600)  
-        ser.write(datos.encode())
-        ser.close()
-        cerrarVentana()
-        datos_entrada.focus()
-        bloquearSeriales()
-    except Exception as e:
-        print('Ocurrió un error al tratar de enviar datos por el puerto '+ str(e))
-    
-
-        
 def confirmacion(mensaje):
-    global ventanaConfirmar, filtro2, tiempoConfirmacion
+    global ventanaConfirmar, filtro2, tiempoConfirmar
     filtro2 = 0
     ventanaPrincipal.pack_forget()
     ventanaConfirmar  = tk.Frame(window)
@@ -499,6 +483,20 @@ def confirmacion(mensaje):
     btnCancelar = tk.Button(ventanaConfirmar, text = "CANCELAR",activebackground = "red", command = cerrarVentana, font = ("arial", 20), bg = "red", width = 10, height = 8)
     btnCancelar.place(x = 10, y = 80)
     ventanaPrincipal.mainloop()
+
+def enviarDatos(datos):
+    print(datos)
+    global tiempoConfirmar
+    tiempoConfirmar.cancel()
+    try:
+        ser = serial.Serial('/dev/ttyAMA0',9600)  
+        ser.write(datos.encode())
+        ser.close()
+        cerrarVentana()
+        datos_entrada.focus()
+        bloquearSeriales()
+    except Exception as e:
+        print('Ocurrió un error al tratar de enviar datos por el puerto '+ str(e))
 
 def ventanaPassword():
     global ventanaPassword
