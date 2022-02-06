@@ -6,8 +6,8 @@ from datetime import datetime
 from threading import Timer
 ####Configuración inicial del programa   ##################################
 window = tk.Tk()
-#window.attributes("-fullscreen", True)
-window.geometry("770x480")
+window.attributes("-fullscreen", True)
+#window.geometry("770x480")
 
 global filtro, cantidad_escaneo, modelo
 error = 0
@@ -259,7 +259,7 @@ def retenerSeriales(event, serial):
                 window.focus()
                 #datos_entrada.mainloop()
                 window.update()
-                print("entre")
+                #print("entre")
                 getGolden(serialesArr)
         except Exception as e: 
             print(e)
@@ -345,7 +345,7 @@ def toMaster(serial_2d, isGolden = 0):
             xmlmes2d = ElementTree.fromstring(txtmes2)
 
             serialrespuesta = xmlmes2d[0][0][0][0][1].text
-            print(xmlmes2d[0][0][0][0][1].text)
+            #print(xmlmes2d[0][0][0][0][1].text)
 
     except:    
         
@@ -390,7 +390,7 @@ def okToTest(serial_2d, serial_master, isGolden):
     global  error, cantidadPasoFinal, mensaje, modelo, isGoldenGlobal
     
     isGoldenGlobal = isGolden
-    print(serial_2d + " " + serial_master)
+    #print(serial_2d + " " + serial_master)
     
     url = "http://mxgdlm0tis01/MES-TIS/tis.asmx"
 
@@ -503,9 +503,9 @@ def confirmacion(mensaje):
 def enviarDatos(datos):
     print(datos)
     try:
-        # ser = serial.Serial('/dev/ttyAMA0',9600)  
-        # ser.write(datos.encode())
-        # ser.close()
+        ser = serial.Serial('/dev/ttyAMA0',9600)  
+        ser.write(datos.encode())
+        ser.close()
         cerrarVentana()
         datos_entrada.focus()
         print("GoldenGLobal = " + str(isGoldenGlobal))
@@ -604,6 +604,7 @@ def panelDeControl():
         imgFlechaAb = ImageTk.PhotoImage(Image.open("imagen/down.png").resize((70, 70)))
         imgFlechaD = ImageTk.PhotoImage(Image.open("imagen/right.png").resize((70, 70)))
         imgFlechaI = ImageTk.PhotoImage(Image.open("imagen/left.png").resize((70, 70)))
+        
     except: 
         
         imgFlechaAr = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/up.png").resize((70, 70)))
