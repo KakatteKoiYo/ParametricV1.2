@@ -87,7 +87,6 @@ def iniciar():
     serial_label = tk.Label(serialFrame, text = "SERIAL", font = ("arial", 20))
     serial_label.pack()
 
-
     datos_entrada = tk.Entry(serialFrame, width = 40, font = ("arial", 20))
     datos_entrada.pack(side = tk.LEFT)
     datos_entrada.focus()
@@ -109,9 +108,6 @@ def iniciar():
     boton_uno["bg"] = boton_dos["bg"] = boton_tres["bg"] = boton_cuatro["bg"] = "green"
 
     
-
-
-
 
 def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, mensaje  = ""):
     global  error, cantidad, cantidad_escaneo, serialesArr, cantidadPasoFinal, modelo
@@ -139,7 +135,6 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
         else:
             objeto["bg"] = "green"
             objeto["activebackground"] = "green"
-
 
 
     if boton_uno["bg"] == "green":
@@ -192,8 +187,6 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
             cantidad_escaneo = 0
             cantidadPasoFinal = 0
             
-            
-
             
 def timerFunc(opcionTimer):
     if opcionTimer == "reinicio":
@@ -457,10 +450,7 @@ def okToTest(serial_2d, serial_master, isGolden):
         if cantidadPasoFinal == cantidad:
             
             seleccionEscaneo(mensaje = "[MODELO: " + modelo + "]\n" + mensaje)
-        
-        
-        
-        
+
     except Exception as e:
         messagebox.showinfo(title="ERROR", message="Ocurrió un error\n Verifique el serial. " + str(e) )
         datos_entrada["state"] = "normal"
@@ -471,15 +461,8 @@ def confirmacion(mensaje):
     ventanaPrincipal.pack_forget()
     ventanaConfirmar  = tk.Frame(window)
     ventanaConfirmar.pack(fill="both", expand="yes")
-    # global ventanaConfirmacion
-    # x = window.winfo_rootx()
-    # y = window.winfo_rooty()
-    # ventanaConfirmacion = tk.Toplevel()
-    # ventanaConfirmacion.geometry("%dx%d+%d+%d" % (760, 470, x , y))
-    # ventanaConfirmacion.resizable(False, False)
-    # ventanaConfirmacion.overrideredirect(1)
 
-    avisoLabel = tk.Label(ventanaConfirmar, text = "CIERRA EL FIXTURE Y BAJA LA PALANCA.", font = ("arial", 25))
+    avisoLabel = tk.Label(ventanaConfirmar, text = "    CIERRA EL FIXTURE Y BAJA LA PALANCA", font = ("arial", 25))
     avisoLabel.place(x= 20, y = 10)
 
     tiempoConfirmar = Timer(10.0, timerFunc, ["cerrar"])
@@ -562,7 +545,6 @@ def panelDeControl():
         if btnObjeto["bg"] == "grey":
             btnObjeto["bg"] = "white"
 
-
         if opcionSel == 1:
             controlFrame.pack_forget()
             generalFrame.pack(side = tk.LEFT, fill = "y")
@@ -579,23 +561,6 @@ def panelDeControl():
     letraSizeMenu = ("arial", 20)
     letraSizeTeclasC =  ("arial", 17)
     letraSizeGeneral = ("arial", 20)
-    # global ventanaConfirmacion
-    # x = window.winfo_rootx()
-    # y = window.winfo_rooty()
-    # ventanaConfirmacion = tk.Toplevel()
-    # ventanaConfirmacion.geometry("%dx%d+%d+%d" % (760, 470, x , y))
-    # ventanaConfirmacion.resizable(False, False)
-    # ventanaConfirmacion.overrideredirect(1)
-
-    # avisoLabel = tk.Label(ventanaPanel, text = "CIERRA EL FIXTURE Y BAJA LA PALANCA.", font = ("arial", 25))
-    # avisoLabel.place(x= 20, y = 10)
-
-    
-    
-
-
-
-
 
     ############################################MENU##################################################vvv
     try:
@@ -604,7 +569,7 @@ def panelDeControl():
         imgFlechaAb = ImageTk.PhotoImage(Image.open("imagen/down.png").resize((70, 70)))
         imgFlechaD = ImageTk.PhotoImage(Image.open("imagen/right.png").resize((70, 70)))
         imgFlechaI = ImageTk.PhotoImage(Image.open("imagen/left.png").resize((70, 70)))
-        
+
     except: 
         
         imgFlechaAr = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/up.png").resize((70, 70)))
@@ -681,8 +646,6 @@ def panelDeControl():
     btnD.grid(column = 3, row = 2)
     btnAb = tk.Button(flechasFrame, image = imgFlechaAb)
     btnAb.grid(column = 2, row = 3)
-
-
 
 
     ventanaPanel.mainloop()
@@ -819,16 +782,6 @@ def bloquearSeriales():
             arrayListaBloqueados.pop(1)
     listaBloqueadostxt.writelines(arrayListaBloqueados)
     listaBloqueadostxt.close()
-
-            
-    
-    
-    
-    
-    
-
-
-
 
 iniciar()
 initConf()
