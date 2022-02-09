@@ -691,7 +691,7 @@ def cerrarVentana():
         global filtro, cantidad_escaneo, cantidad, serialesArr
         global tiempoConfirmar
         tiempoConfirmar.cancel()
-        ventanaConfirmar.pack_forget()
+        ventanaConfirmar.destroy()
         ventanaPrincipal.pack(fill="both", expand="yes")
         cantidad_escaneo  = 0
         texto_seleccion = "0" + "/" + str (cantidad)
