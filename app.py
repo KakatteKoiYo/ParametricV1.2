@@ -505,7 +505,7 @@ def confirmacion(mensaje):
         labeldb.place(x = 220, y = 90)
 
 
-        btnConfirmar = tk.Button(ventanaConfirmar, text = "LISTO",activebackground = "green" ,command = lambda x = mensaje: enviarDatos(x), font = ("arial", 20), bg = "green", width = 10, height = 8)
+        btnConfirmar = tk.Button(ventanaConfirmar, text = "LISTO",activebackground = "green" ,command = lambda x = mensaje: enviarDatos(x, 1), font = ("arial", 20), bg = "green", width = 10, height = 8)
         btnConfirmar.place(x = 580, y = 80)
         btnCancelar = tk.Button(ventanaConfirmar, text = "CANCELAR",activebackground = "red", command = cerrarVentana, font = ("arial", 20), bg = "red", width = 10, height = 8)
         btnCancelar.place(x = 10, y = 80)
@@ -513,16 +513,18 @@ def confirmacion(mensaje):
     except Exception as e:
         escribirLogFallas(e)    
 
-def enviarDatos(datos):
+def enviarDatos(datos, confirmacion = 0):
     try:
-        ser = serial.Serial('/dev/ttyAMA0',9600)  
-        ser.write(datos.encode())
-        ser.close()
-        cerrarVentana()
+        # ser = serial.Serial('/dev/ttyAMA0',9600)  
+        # ser.write(datos.encode())
+        # ser.close()
         datos_entrada.focus()
-        print("GoldenGLobal = " + str(isGoldenGlobal))
-        if isGoldenGlobal == 0:
-            bloquearSeriales()
+        if confirmacion == 1:
+            cerrarVentana()
+            
+            print("GoldenGLobal = " + str(isGoldenGlobal))
+            if isGoldenGlobal == 0:
+                bloquearSeriales()
     except Exception as e:
         escribirLogFallas(e)
 
@@ -842,8 +844,8 @@ def escribirLogFallas(error):
     except: 
         ruta = "/home/pi/Documents/oktotest_pmc/log.txt"
 
-    log.write(str(error) + "   " + str(datetime.now()))
-    log.write("-----------------------------------------------------------------")
+    log.write(str(error) + "   " + str(datetime.now()) + "\n")
+    log.write("-----------------------------------------------------------------" + "\n")
     log.close
 
 iniciar()
