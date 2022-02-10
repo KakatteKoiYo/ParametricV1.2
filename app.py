@@ -108,7 +108,7 @@ def iniciar():
         ### Configuro los botones en color verde, que el programa entiende como habilitados
         boton_uno["bg"] = boton_dos["bg"] = boton_tres["bg"] = boton_cuatro["bg"] = "green"
     except Exception as e:
-        escribirLogFallas(e)
+        escribirLogFallas("iniciar(): " + str(e))
 
     
 
@@ -192,7 +192,7 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
                 cantidad_escaneo = 0
                 cantidadPasoFinal = 0
     except Exception as e:
-        escribirLogFallas(e)
+        escribirLogFallas("seleccionEscaneo(): " + str(e))
         
             
             
@@ -204,7 +204,7 @@ def timerFunc(opcionTimer):
             cerrarVentana()
             seleccionEscaneo(mensaje="Se agotó tiempo de espera en confirmación")
     except Exception as e:
-        escribirLogFallas(e)
+        escribirLogFallas("timerFunc(): " + str(e))
 
 def retenerSeriales(event, serial):
     try: 
@@ -270,7 +270,7 @@ def retenerSeriales(event, serial):
                 print(e)
             filtro = 0
     except Exception as e:
-        escribirLogFallas(e)        
+        escribirLogFallas("retenerSeriales(): " + str(e))        
     
 
 def limpiarCampo():
@@ -280,7 +280,7 @@ def limpiarCampo():
         campo_informacion["state"] = "disabled"
         datos_entrada.delete('0', 'end')
     except Exception as e:
-        escribirLogFallas(e)
+        escribirLogFallas("limpiarCampo(): " + str(e))
 
 def getGolden(array):
 
@@ -319,7 +319,7 @@ def getGolden(array):
         # else:
         #     seleccionEscaneo(mensaje = "GOLDEN TEST")
     except Exception as e:
-        escribirLogFallas(e)
+        escribirLogFallas("getGolden(): " + str(e))
 
 
 def toMaster(serial_2d, isGolden = 0):
@@ -397,7 +397,7 @@ def toMaster(serial_2d, isGolden = 0):
                 okToTest(i, j, isGolden)
         return
     except Exception as e:
-        escribirLogFallas(e)
+        escribirLogFallas("toMaster(): " + str(e))
 
 
 def okToTest(serial_2d, serial_master, isGolden):
@@ -479,7 +479,7 @@ def okToTest(serial_2d, serial_master, isGolden):
             datos_entrada["state"] = "normal"
 
     except Exception as e:
-        escribirLogFallas(e)        
+        escribirLogFallas("okToTest(): " + str(e))        
 
 def confirmacion(mensaje):
     try: 
@@ -511,13 +511,13 @@ def confirmacion(mensaje):
         btnCancelar.place(x = 10, y = 80)
         ventanaPrincipal.mainloop()
     except Exception as e:
-        escribirLogFallas(e)    
+        escribirLogFallas("confirmacion(): " + str(e))    
 
 def enviarDatos(datos, confirmacion = 0):
     try:
-        # ser = serial.Serial('/dev/ttyAMA0',9600)  
-        # ser.write(datos.encode())
-        # ser.close()
+        ser = serial.Serial('/dev/ttyAMA0',9600)  
+        ser.write(datos.encode())
+        ser.close()
         datos_entrada.focus()
         if confirmacion == 1:
             cerrarVentana()
@@ -526,7 +526,7 @@ def enviarDatos(datos, confirmacion = 0):
             if isGoldenGlobal == 0:
                 bloquearSeriales()
     except Exception as e:
-        escribirLogFallas(e)
+        escribirLogFallas("enviarDatos(): " + str(e))
 
 
 def ventanaPassword():
@@ -563,14 +563,14 @@ def ventanaPassword():
         boton_cerrar = tk.Button(ventanaPassword ,text = "CANCELAR", command = cerrarVentanaPassword,  font = ("arial", 20))
         boton_cerrar.pack(pady = 20)
     except Exception as e:
-        escribirLogFallas(e)    
+        escribirLogFallas("ventanaPassword(): " + str(e))    
 
 
 def cerrarVentanaPassword():
     try: 
         ventanaPassword.destroy()
     except Exception as e:
-        escribirLogFallas(e)
+        escribirLogFallas("cerrarVentanaPassword(): " + str(e))
 
 def panelDeControl():
     try:
@@ -654,18 +654,27 @@ def panelDeControl():
         controlOpciones = tk.Frame(controlFrame)
         controlOpciones.pack(side = tk.LEFT, padx = 50)
 
-        btnF11 = tk.Button(controlOpciones, text = "F11", width= 8, font = letraSizeTeclasC, bg = "cyan")
+
+        btnF11 = tk.Button(controlOpciones, text = "TEST PLAN", width= 10, font = letraSizeTeclasC, bg = "cyan"
+        , command = lambda : enviarDatos("TESTPLAN"))
+        btnF11.grid(column = 1, row = 0, pady = 15)
+        btnF11 = tk.Button(controlOpciones, text = "F11", width= 8, font = letraSizeTeclasC, bg = "cyan"
+        , command = lambda : enviarDatos("1111"))
         btnF11.grid(column = 1, row = 1, pady = 15)
-        btnTab = tk.Button(controlOpciones, text = "Tab", width= 8, font = letraSizeTeclasC, bg = "cyan")
+        btnTab = tk.Button(controlOpciones, text = "Tab", width= 8, font = letraSizeTeclasC, bg = "cyan"
+        , command = lambda : enviarDatos("TAB"))
         btnTab.grid(column = 1, row = 2, pady = 15)
-        btnEnter = tk.Button(controlOpciones, text = "Enter", width= 8, font = letraSizeTeclasC, bg = "green")
+        btnEnter = tk.Button(controlOpciones, text = "Enter", width= 8, font = letraSizeTeclasC, bg = "green"
+        , command = lambda : enviarDatos("OK"))
         btnEnter.grid(column = 1, row = 3, pady = 15)
-        btnEnter = tk.Button(controlOpciones, text = "Espacio", width= 8, font = letraSizeTeclasC, bg = "cyan")
+        btnEnter = tk.Button(controlOpciones, text = "Espacio", width= 8, font = letraSizeTeclasC, bg = "cyan"
+        , command = lambda : enviarDatos("ESPACIO"))
         btnEnter.grid(column = 1, row = 4, pady = 15)
 
 
         
-        btnAltF4 = tk.Button(controlOpciones, text = "Alt+F4", width= 8, font = letraSizeTeclasC, bg = "cyan")
+        btnAltF4 = tk.Button(controlOpciones, text = "Alt+F4", width= 8, font = letraSizeTeclasC, bg = "cyan"
+        , command = lambda : enviarDatos("CERRAR"))
         btnAltF4.grid(column = 1, row = 5, pady = 90)
 
         flechasFrame = tk.Frame(controlFrame)
@@ -686,7 +695,7 @@ def panelDeControl():
 
         ventanaPanel.mainloop()
     except Exception as e:
-        escribirLogFallas(e)
+        escribirLogFallas("panelDeControl(): " + str(e))
 
 def cerrarVentana():
     try:
@@ -702,7 +711,7 @@ def cerrarVentana():
         datos_entrada.focus()
         limpiarCampo()
     except Exception as e:
-        escribirLogFallas(e)    
+        escribirLogFallas("cerrarVentana(): " + str(e))    
 
 def initConf():
     try:
@@ -727,7 +736,7 @@ def initConf():
         modoESel = textosBtn[0]
         bloqueoSel = textosBtn[1]
     except Exception as e:
-        escribirLogFallas(e)
+        escribirLogFallas("initConf(): " + str(e))
 
 def testtime(tiempo):
     try:
@@ -775,7 +784,7 @@ def testtime(tiempo):
         archivotexto.close()
         return resultado
     except Exception as e:
-        escribirLogFallas(e)
+        escribirLogFallas("testtime(): " + str(e))
 
 def revisarSerialesBloqueados(serial):
     try:
@@ -809,7 +818,7 @@ def revisarSerialesBloqueados(serial):
         listaBloqueadostxt.close
         return puedeProbarse
     except Exception as e:
-        escribirLogFallas(e)
+        escribirLogFallas("revisarSerialesBloqueados(): " + str(e))
 
 def bloquearSeriales():
     try:
@@ -834,7 +843,7 @@ def bloquearSeriales():
         listaBloqueadostxt.writelines(arrayListaBloqueados)
         listaBloqueadostxt.close()
     except Exception as e:
-        escribirLogFallas(e)
+        escribirLogFallas("bloquearSeriales(): " + str(e))
 
 def escribirLogFallas(error):
     
@@ -844,7 +853,7 @@ def escribirLogFallas(error):
     except: 
         ruta = "/home/pi/Documents/oktotest_pmc/log.txt"
 
-    log.write(str(error) + "   " + str(datetime.now()) + "\n")
+    log.write(error "   " + str(datetime.now()) + "\n")
     log.write("-----------------------------------------------------------------" + "\n")
     log.close
 
