@@ -853,7 +853,7 @@ def escribirLogFallas(error):
     except: 
         ruta = "/home/pi/Documents/oktotest_pmc/log.txt"
 
-    log.write(error "   " + str(datetime.now()) + "\n")
+    log.write(error + "   " + str(datetime.now()) + "\n")
     log.write("-----------------------------------------------------------------" + "\n")
     log.close
 
