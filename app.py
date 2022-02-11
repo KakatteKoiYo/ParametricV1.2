@@ -304,20 +304,18 @@ def getGolden(array):
         response = requests.post(url, data = body, headers = headers)
         txtmesstep = response.text 
         
-        # txtmesstep2 = txtmesstep.replace("&lt;", "<").replace("&gt;", ">")
+
 
         xmlgolden = ElementTree.fromstring(txtmesstep)
         goldentxt = xmlgolden[0][0][0].text
         for i in array:
+            time.sleep(0.100)
             if re.search(i, goldentxt):
+                
                 toMaster(i, isGolden= 1)
             else:
                 toMaster(i)
-        # if errorGolden == 1:
-        #     for i in array:
-                
-        # else:
-        #     seleccionEscaneo(mensaje = "GOLDEN TEST")
+
     except Exception as e:
         escribirLogFallas("getGolden(): " + str(e))
 
@@ -326,7 +324,7 @@ def toMaster(serial_2d, isGolden = 0):
     try:
         global filtro
         
-        print("Valor de isGolden: " + str(isGolden))
+        #print("Valor de isGolden: " + str(isGolden))
         try:
             if len(serial_2d) < 12:
                 raise Exception("Longitud de serial no valida")
@@ -435,7 +433,7 @@ def okToTest(serial_2d, serial_master, isGolden):
             
 
             isTimeOK = testtime(tiempoprueba)
-            print(isTimeOK)
+            #print(isTimeOK)
 
         
             if isGolden == 1:
@@ -522,7 +520,7 @@ def enviarDatos(datos, confirmacion = 0):
         if confirmacion == 1:
             cerrarVentana()
             
-            print("GoldenGLobal = " + str(isGoldenGlobal))
+            #print("GoldenGLobal = " + str(isGoldenGlobal))
             if isGoldenGlobal == 0:
                 bloquearSeriales()
     except Exception as e:
@@ -681,15 +679,15 @@ def panelDeControl():
         flechasFrame.pack(side = tk.LEFT,  padx = 30)
 
 
-        btnAr = tk.Button(flechasFrame, image = imgFlechaAr)
+        btnAr = tk.Button(flechasFrame, image = imgFlechaAr, command = lambda : enviarDatos("UP"))
         btnAr.grid(column = 2, row = 1)
 
         
-        btnI = tk.Button(flechasFrame, image = imgFlechaI)
+        btnI = tk.Button(flechasFrame, image = imgFlechaI, command = lambda : enviarDatos("LEFT"))
         btnI.grid(column = 1, row = 2)
-        btnD = tk.Button(flechasFrame, image = imgFlechaD)
+        btnD = tk.Button(flechasFrame, image = imgFlechaD, command = lambda : enviarDatos("RIGHT"))
         btnD.grid(column = 3, row = 2)
-        btnAb = tk.Button(flechasFrame, image = imgFlechaAb)
+        btnAb = tk.Button(flechasFrame, image = imgFlechaAb, command = lambda : enviarDatos("DOWN"))
         btnAb.grid(column = 2, row = 3)
 
 
@@ -809,8 +807,8 @@ def revisarSerialesBloqueados(serial):
                 diferencia =  datetime.now() - datetime.fromisoformat(linea.split("#T")[1].strip())
                 diferenciasegundos = diferencia.total_seconds()
                 diferenciaminutos = int(diferenciasegundos/60)
-                print(diferenciaminutos)
-                print(diferenciaminutos<10)
+                #print(diferenciaminutos)
+                #print(diferenciaminutos<10)
                 if diferenciaminutos<10:
                     puedeProbarse = 0
 
@@ -837,7 +835,7 @@ def bloquearSeriales():
         listaBloqueadostxt = open(ruta, "w")
         for serial in seriales2DArray:
             arrayListaBloqueados.append(serial+" #T"+ str(datetime.now())+"\n" )
-            print(arrayListaBloqueados)
+            #print(arrayListaBloqueados)
             if len(arrayListaBloqueados) > 10:
                 arrayListaBloqueados.pop(1)
         listaBloqueadostxt.writelines(arrayListaBloqueados)
