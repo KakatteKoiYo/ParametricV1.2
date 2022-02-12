@@ -12,7 +12,6 @@ window.attributes("-fullscreen", True)
 global filtro, cantidad_escaneo, modelo
 error = 0
 filtro = 0
-cantidadPasoFinal = 0
 
 cantidad_escaneo = 0
 mensaje = ""
@@ -208,12 +207,13 @@ def timerFunc(opcionTimer):
 
 def retenerSeriales(event, serial):
     try: 
+        #BORRAR serialesArr
         global cantidad_escaneo, serialesArr, datos_entrada, seriales2DArray, serialesMasterArray, filtro, mensaje, modelo, error, tiempoReinicio
         if serial == "":
             return
         if cantidad_escaneo <= cantidad:
-            seriales2DArray = []
             serialesMasterArray = []
+            seriales2DArray = []
             cantidad_escaneo += 1
             texto_seleccion = str(cantidad_escaneo) + "/" + str (cantidad)
             cantidad_seleccion["text"] = texto_seleccion
@@ -264,8 +264,9 @@ def retenerSeriales(event, serial):
                     window.focus()
                     #datos_entrada.mainloop()
                     window.update()
-                    #print("entre")
+                    seriales2DArray = serialesArr
                     getGolden(serialesArr)
+
             except Exception as e: 
                 print(e)
             filtro = 0
@@ -285,7 +286,9 @@ def limpiarCampo():
 def getGolden(array):
 
     try: 
-        #errorGolden = 0
+        isGolden = 0
+
+
         url = "http://mxgdlm0webte02/OkToTesterWebServiceInterface/OkToTesterWebServiceInterface.asmx"
 
         headers = {"Content-Type" : "text/xml; charset=utf-8"}
@@ -309,52 +312,49 @@ def getGolden(array):
         xmlgolden = ElementTree.fromstring(txtmesstep)
         goldentxt = xmlgolden[0][0][0].text
         for i in array:
-            time.sleep(0.100)
             if re.search(i, goldentxt):
-                
-                toMaster(i, isGolden= 1)
-            else:
-                toMaster(i)
+                isGolden = 1
+        
+        print(isGolden)
+        toMaster(array, isGolden, 0)
 
+
+        
     except Exception as e:
         escribirLogFallas("getGolden(): " + str(e))
 
 
-def toMaster(serial_2d, isGolden = 0):
+def toMaster(serial_2dArray, isGolden = 0, contador = 0):
     try:
-        global filtro
-        
-        #print("Valor de isGolden: " + str(isGolden))
         try:
-            if len(serial_2d) < 12:
-                raise Exception("Longitud de serial no valida")
-            else:
-                if isGolden == 1:
-                    raise Exception()
-                
-                url = "http://mxgdlm0webte02/wsMesInterface/MesWebServiceInterface.asmx"
+            global filtro, modelo, error
 
-                headers = {"Content-Type" : "text/xml; charset=utf-8"}
+            if isGolden == 1:
+                raise Exception()
             
+            url = "http://mxgdlm0webte02/wsMesInterface/MesWebServiceInterface.asmx"
 
-                body = """<?xml version="1.0" encoding="utf-8"?>
-                <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-                <soap:Body>
-                <GetBoardHistoryFromMesInstance xmlns="http://tempuri.org/">
-                <mesInstance>1</mesInstance>
-                <customerID>68</customerID>
-                <serialNumber>"""+serial_2d+"""</serialNumber>
-                </GetBoardHistoryFromMesInstance>
-                </soap:Body>
-                </soap:Envelope>"""
-                response = requests.post(url, data = body, headers = headers)
-                
-                txtmes = response.text 
-                txtmes2 = txtmes.replace("&lt;", "<").replace("&gt;", ">")
-                xmlmes2d = ElementTree.fromstring(txtmes2)
+            headers = {"Content-Type" : "text/xml; charset=utf-8"}
+        
 
-                serialrespuesta = xmlmes2d[0][0][0][0][1].text
-                #print(xmlmes2d[0][0][0][0][1].text)
+            body = """<?xml version="1.0" encoding="utf-8"?>
+            <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+            <soap:Body>
+            <GetBoardHistoryFromMesInstance xmlns="http://tempuri.org/">
+            <mesInstance>1</mesInstance>
+            <customerID>68</customerID>
+            <serialNumber>"""+serial_2dArray[contador]+"""</serialNumber>
+            </GetBoardHistoryFromMesInstance>
+            </soap:Body>
+            </soap:Envelope>"""
+            response = requests.post(url, data = body, headers = headers)
+            
+            txtmes = response.text 
+            txtmes2 = txtmes.replace("&lt;", "<").replace("&gt;", ">")
+            xmlmes2d = ElementTree.fromstring(txtmes2)
+
+            serialrespuesta = xmlmes2d[0][0][0][0][1].text
+            #print(xmlmes2d[0][0][0][0][1].text)
 
         except:    
             
@@ -366,7 +366,7 @@ def toMaster(serial_2d, isGolden = 0):
             <soap12:Body>
             <GetMesSerialFromLinkedCode xmlns="http://tempuri.org/">
             <customer>ACLARA</customer>
-            <linkedCode>"""+serial_2d+"""</linkedCode>
+            <linkedCode>"""+serial_2dArray[contador]+"""</linkedCode>
             <instance>1</instance>
             </GetMesSerialFromLinkedCode>
             </soap12:Body>
@@ -380,27 +380,36 @@ def toMaster(serial_2d, isGolden = 0):
         
             serialrespuesta = xmlmes2d[0][0][0].text
 
-        seriales2DArray.append(serial_2d)
         serialesMasterArray.append(serialrespuesta)
-    
-    
+
+
         if serialrespuesta == "Serial Linked Not Founded" and filtro == 0:
 
-            messagebox.showinfo(title="ERROR", message="Serial no valido: "+ serial_2d +"\n" + "Asegúrese de escanear el serial 2D")
+            mensajeError ="Serial no valido: "+ serial_2dArray[contador] + " Asegúrese de escanear el serial 2D\n"
             filtro = 1
-            datos_entrada["state"] = "normal"
-            seleccionEscaneo(reset=1)
-        if len(seriales2DArray) == cantidad and filtro == 0:
-            for i, j in zip(seriales2DArray, serialesMasterArray):
-                okToTest(i, j, isGolden)
+            
+
+        contador = contador + 1
+        if contador == cantidad:
+            if filtro == 1:
+                error = 1
+                seleccionEscaneo(mensaje = "[MODELO: " + modelo + "]\n" + mensajeError)
+                return
+            else: 
+                print("Hola estoy aqui")
+                okToTest(serial_2dArray, serialesMasterArray, isGolden, 0)
+        else: 
+            
+            toMaster(serial_2dArray, isGolden, contador)
         return
     except Exception as e:
         escribirLogFallas("toMaster(): " + str(e))
 
 
-def okToTest(serial_2d, serial_master, isGolden):
+def okToTest(serial_2dArray, serial_masterArray, isGolden, contador):
     try:
-
+        print(serial_masterArray[contador])
+        print(serial_2dArray[contador])
         global  error, cantidadPasoFinal, mensaje, modelo, isGoldenGlobal
         
         isGoldenGlobal = isGolden
@@ -414,7 +423,7 @@ def okToTest(serial_2d, serial_master, isGolden):
         <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
         <soap12:Body>
         <GetCurrentRouteStep xmlns="http://jabil.com/GMS/MES_TIS">
-        <SerialNumber>"""+serial_master+"""</SerialNumber>
+        <SerialNumber>"""+serial_masterArray[contador]+"""</SerialNumber>
         </GetCurrentRouteStep>
         </soap12:Body>
         </soap12:Envelope>
@@ -459,22 +468,27 @@ def okToTest(serial_2d, serial_master, isGolden):
                             respuesta_programa = "Último dato: " + paso
                     error = 1
                 
-                if revisarSerialesBloqueados(serial_2d) == 0:
+                if revisarSerialesBloqueados(serial_2dArray[contador]) == 0:
                     respuesta_programa =  "Esta unidad ya fue escaneada. Debe esperar 10 min para volver a probarla"
                     error = 1
             
 
             #respuesta_historial =  paso + " " + status 
-            mensaje += serial_2d + " " + respuesta_programa + "\n"
-            cantidadPasoFinal += 1
+            mensaje += serial_2dArray[contador] + " " + respuesta_programa + "\n"
             
-            if cantidadPasoFinal == cantidad:
+            contador = contador + 1
+            print(contador)
+            if contador  == cantidad:
                 
                 seleccionEscaneo(mensaje = "[MODELO: " + modelo + "]\n" + mensaje)
+            else:
+                okToTest(serial_2dArray, serialesMasterArray, isGolden, contador)
+                
 
         except Exception as e:
             messagebox.showinfo(title="ERROR", message="Ocurrió un error\n Verifique el serial. " + str(e) )
             datos_entrada["state"] = "normal"
+            seleccionEscaneo(reset = 1)
 
     except Exception as e:
         escribirLogFallas("okToTest(): " + str(e))        
@@ -519,7 +533,7 @@ def enviarDatos(datos, confirmacion = 0):
         datos_entrada.focus()
         if confirmacion == 1:
             cerrarVentana()
-            
+            print("IsGoldenGlobal" + str(isGoldenGlobal))
             #print("GoldenGLobal = " + str(isGoldenGlobal))
             if isGoldenGlobal == 0:
                 bloquearSeriales()
