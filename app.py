@@ -10,6 +10,22 @@ window.attributes("-fullscreen", True)
 #window.geometry("770x480")
 
 global filtro, cantidad_escaneo, modelo
+
+ 
+try:
+    imgdb = ImageTk.PhotoImage(Image.open("imagen/fixture.png").resize((300, 250)))
+    imgFlechaAr = ImageTk.PhotoImage(Image.open("imagen/up.png").resize((70, 70)))
+    imgFlechaAb = ImageTk.PhotoImage(Image.open("imagen/down.png").resize((70, 70)))
+    imgFlechaD = ImageTk.PhotoImage(Image.open("imagen/right.png").resize((70, 70)))
+    imgFlechaI = ImageTk.PhotoImage(Image.open("imagen/left.png").resize((70, 70)))
+except:
+    imgdb = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/fixture.png").resize((300, 250)))
+    imgFlechaAr = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/up.png").resize((70, 70)))
+    imgFlechaAb = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/down.png").resize((70, 70)))
+    imgFlechaD = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/right.png").resize((70, 70)))
+    imgFlechaI = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/left.png").resize((70, 70)))
+
+
 error = 0
 filtro = 0
 
@@ -73,7 +89,7 @@ def iniciar():
         boton_clear.place(x = 570, y = 15)
         ###Botón CONF: modo soporte, para configuración del programa, usar teclado o teclas ##################################
         boton_conf = tk.Button(ventanaPrincipal, text= "CONF", font =  ("arial", 25), width = 10, bg = "grey",
-            command = ventanaPassword )
+            command = askPassword )
         boton_conf.place(x = 20, y = 100)
         ###Botón OK: para cerrar ventana emergente. Llama a función que envía un dato por com serial al arduino para enviar un Enter ####
         boton_ok = tk.Button(ventanaPrincipal, text= "OK", font =  ("arial", 25), width = 10, height = 2,bg = "SkyBlue1",
@@ -108,8 +124,6 @@ def iniciar():
         boton_uno["bg"] = boton_dos["bg"] = boton_tres["bg"] = boton_cuatro["bg"] = "green"
     except Exception as e:
         escribirLogFallas("iniciar(): " + str(e))
-
-    
 
 def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, mensaje  = ""):
     try:
@@ -192,9 +206,7 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
                 cantidadPasoFinal = 0
     except Exception as e:
         escribirLogFallas("seleccionEscaneo(): " + str(e))
-        
-            
-            
+                    
 def timerFunc(opcionTimer):
     try: 
         if opcionTimer == "reinicio":
@@ -273,7 +285,6 @@ def retenerSeriales(event, serial):
     except Exception as e:
         escribirLogFallas("retenerSeriales(): " + str(e))        
     
-
 def limpiarCampo():
     try: 
         campo_informacion["state"] = "normal"
@@ -322,7 +333,6 @@ def getGolden(array):
         
     except Exception as e:
         escribirLogFallas("getGolden(): " + str(e))
-
 
 def toMaster(serial_2dArray, isGolden = 0, contador = 0):
     try:
@@ -404,7 +414,6 @@ def toMaster(serial_2dArray, isGolden = 0, contador = 0):
         return
     except Exception as e:
         escribirLogFallas("toMaster(): " + str(e))
-
 
 def okToTest(serial_2dArray, serial_masterArray, isGolden, contador):
     try:
@@ -508,11 +517,7 @@ def confirmacion(mensaje):
         tiempoConfirmar = Timer(10.0, timerFunc, ["cerrar"])
         tiempoConfirmar.start()
 
-        try:
-            imgdb = ImageTk.PhotoImage(Image.open("imagen/fixture.png").resize((300, 250)))
-        except:
-            imgdb = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/fixture.png").resize((300, 250)))
-            
+
         labeldb = tk.Label(ventanaConfirmar, image = imgdb)
         labeldb.place(x = 220, y = 90)
 
@@ -527,9 +532,9 @@ def confirmacion(mensaje):
 
 def enviarDatos(datos, confirmacion = 0):
     try:
-        ser = serial.Serial('/dev/ttyAMA0',9600)  
-        ser.write(datos.encode())
-        ser.close()
+        # ser = serial.Serial('/dev/ttyAMA0',9600)  
+        # ser.write(datos.encode())
+        # ser.close()
         datos_entrada.focus()
         if confirmacion == 1:
             cerrarVentana()
@@ -540,8 +545,7 @@ def enviarDatos(datos, confirmacion = 0):
     except Exception as e:
         escribirLogFallas("enviarDatos(): " + str(e))
 
-
-def ventanaPassword():
+def askPassword():
     try:
         global ventanaPassword
 
@@ -554,8 +558,10 @@ def ventanaPassword():
                 label_password["fg"] = "red"
                 input_password.delete('0', 'end')
 
-
-        cerrarVentanaPassword()
+        try:
+            cerrarVentanaPassword()
+        except:
+            pass
         x = window.winfo_rootx()
         y = window.winfo_rooty()
         ventanaPassword = tk.Toplevel(bg = "ivory4")
@@ -575,8 +581,7 @@ def ventanaPassword():
         boton_cerrar = tk.Button(ventanaPassword ,text = "CANCELAR", command = cerrarVentanaPassword,  font = ("arial", 20))
         boton_cerrar.pack(pady = 20)
     except Exception as e:
-        escribirLogFallas("ventanaPassword(): " + str(e))    
-
+        escribirLogFallas("askPassword(): " + str(e))    
 
 def cerrarVentanaPassword():
     try: 
@@ -611,19 +616,7 @@ def panelDeControl():
         letraSizeGeneral = ("arial", 20)
 
         ############################################MENU##################################################vvv
-        try:
 
-            imgFlechaAr = ImageTk.PhotoImage(Image.open("imagen/up.png").resize((70, 70)))
-            imgFlechaAb = ImageTk.PhotoImage(Image.open("imagen/down.png").resize((70, 70)))
-            imgFlechaD = ImageTk.PhotoImage(Image.open("imagen/right.png").resize((70, 70)))
-            imgFlechaI = ImageTk.PhotoImage(Image.open("imagen/left.png").resize((70, 70)))
-
-        except: 
-            
-            imgFlechaAr = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/up.png").resize((70, 70)))
-            imgFlechaAb = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/down.png").resize((70, 70)))
-            imgFlechaD = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/right.png").resize((70, 70)))
-            imgFlechaI = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/left.png").resize((70, 70)))
 
         panelMenu =  tk.Frame(ventanaPanel, bg ="yellow")
         panelMenu.pack(side = tk.LEFT, fill = "y")
