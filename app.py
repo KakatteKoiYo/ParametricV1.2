@@ -1,29 +1,77 @@
-import tkinter as tk, requests, serial,time, re, os
+import ipaddress
+import tkinter as tk, requests, serial,time, re, os, socket
 from xml.etree import ElementTree
 from tkinter import messagebox
 from PIL import ImageTk,Image 
 from datetime import datetime
 from threading import Timer
-####Configuración inicial del programa   ##################################
+####Configuracion inicial del programa   ##################################
 window = tk.Tk()
 window.attributes("-fullscreen", True)
 #window.geometry("770x480")
-
+#window.geometry("800x800")
+#window.geometry("1900x1080")
 global filtro, cantidad_escaneo, modelo
 
- 
+_version_ = "1.2.2"
+
+window.update()
+screen_width = window.winfo_width()#window.winfo_screenwidth()
+screen_height = window.winfo_height()#window.winfo_screenheight()
+
+
+sizeDic = {
+    "CamporespuestaX" : int(screen_width * 0.038),
+    "CamporespuestaY" : int(screen_height * 0.562),
+    "CamposerialX" : int(screen_width * 0.1229),
+    "CamposerialY" : int(screen_height * 0.4058),
+    "CamposerialW" :int(screen_width * 0.0519),
+    "BotonesX" : int(screen_width * 0.3155),
+    "BotonesY" : int(screen_height * 0.0312),
+    "BotonOKX" : int(screen_width * 0.7376),
+    "BotonOKY" : int(screen_height * 0.1666),
+    "BotonConfX" : int(screen_width * 0.0220),
+    "BotonConfY" : int(screen_height * 0.2083),
+    "BotonAllX" : int(screen_width * 0.0220),
+    "BotonAllY" : int(screen_height * 0.03125),
+    "BotonClearX" : int(screen_width * 0.7376),
+    "BotonClearY" : int(screen_height * 0.0312),
+    "BotonSize" : int(((screen_width * 0.1250)/ 5) * 1.50),
+    "BotonW" : int(screen_height * 0.0649 ),
+    "FixtureIMGSizeW" : int(screen_width * 0.389),
+    "FixtureIMGSizeH" : int(screen_height * 0.5208),
+    "FixtureX" : int(screen_width * 0.2857),
+    "FixtureY" : int(screen_height * 0.1875),
+    "BotonListoX" : int(screen_width * 0.7532),
+    "BotonListoY" : int(screen_height * 0.1666),
+    "BotonCancelarX" : int(screen_width * 0.0129),
+    "BotonCancelarY" : int(screen_height * 0.1666),
+    "BotonesLadosSize" : int((((screen_width * 0.1900)/10)*1.50)),
+    "RespuestaFontSize" : int((((screen_width * 0.7587)/75)*1.50)),
+    "SerialLabelFontSize" : int((((screen_width * 0.0777)/5)*1.50)),
+    "SerialInputFontSize" : int((((screen_width * 0.6218)/40)*1.50)),
+    "RespuestaLabelFontSize" : int((((screen_width * 0.0981)/8)*1.50)),
+    "EspacioAppInfoX" : int(screen_width * 0.1257),
+    "AppInfoFontSize" : int((((screen_width * 0.0698)/10)*1.50)),
+
+}
+
+
+
+#print(sizeDic["RespuestaFontSize"])
+
 try:
-    imgdb = ImageTk.PhotoImage(Image.open("imagen/fixture.png").resize((300, 250)))
+    imgdb = ImageTk.PhotoImage(Image.open("imagen/fixture.png").resize((sizeDic["FixtureIMGSizeW"], sizeDic["FixtureIMGSizeH"])))
     imgFlechaAr = ImageTk.PhotoImage(Image.open("imagen/up.png").resize((70, 70)))
     imgFlechaAb = ImageTk.PhotoImage(Image.open("imagen/down.png").resize((70, 70)))
     imgFlechaD = ImageTk.PhotoImage(Image.open("imagen/right.png").resize((70, 70)))
     imgFlechaI = ImageTk.PhotoImage(Image.open("imagen/left.png").resize((70, 70)))
 except:
-    imgdb = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/fixture.png").resize((300, 250)))
-    imgFlechaAr = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/up.png").resize((70, 70)))
-    imgFlechaAb = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/down.png").resize((70, 70)))
-    imgFlechaD = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/right.png").resize((70, 70)))
-    imgFlechaI = ImageTk.PhotoImage(Image.open("/home/pi/Documents/oktotest_pmc/imagen/left.png").resize((70, 70)))
+    imgdb = ImageTk.PhotoImage(Image.open("/oktotest_pmc/imagen/fixture.png").resize((sizeDic["FixtureIMGSizeX"], sizeDic["FixtureIMGSizeH"])))
+    imgFlechaAr = ImageTk.PhotoImage(Image.open("/oktotest_pmc/imagen/up.png").resize((70, 70)))
+    imgFlechaAb = ImageTk.PhotoImage(Image.open("/oktotest_pmc/imagen/down.png").resize((70, 70)))
+    imgFlechaD = ImageTk.PhotoImage(Image.open("/oktotest_pmc/imagen/right.png").resize((70, 70)))
+    imgFlechaI = ImageTk.PhotoImage(Image.open("/oktotest_pmc/imagen/left.png").resize((70, 70)))
 
 
 error = 0
@@ -33,19 +81,21 @@ cantidad_escaneo = 0
 mensaje = ""
 modelo = ""
 
-###Método con todo el diseño de la interfaz principal ##################################
+
+
+#print(sizeDic)
+###Metodo con todo el diseno de la interfaz principal ##################################
 def iniciar():
     try: 
         global datos_entrada, campo_informacion, ventanaPrincipal
         global boton_uno, boton_dos, boton_tres, boton_cuatro, cantidad_seleccion
 
 
-
         ventanaPrincipal = tk.Frame(window)
         ventanaPrincipal.pack(fill="both", expand="yes")
 
-        ### Tamaño de los números de los botones, su ancho y espacio en Y y X ##################################
-        numero_size = ("arial", 33)
+        ### Tamano de los numeros de los botones, su ancho y espacio en Y y X ##################################
+        numero_size = ("arial", sizeDic["BotonSize"])
         ancho_boton = 5
         espacio_botonx = 5
         espacio_botony = 5
@@ -54,14 +104,14 @@ def iniciar():
         boton_uno = boton_dos = boton_tres = boton_cuatro = None
 
         botonFrame = tk.Frame(ventanaPrincipal)
-        botonFrame.place(x = 240, y = 15)
+        botonFrame.place(x = sizeDic["BotonesX"], y = sizeDic["BotonesY"])
 
         filaUno = tk.Frame(botonFrame)
         filaUno.pack()
         filaDos = tk.Frame(botonFrame)
         filaDos.pack()
 
-        ###Botones de selección de imágenes de PARAMETRIC ##################################
+        ###Botones de seleccion de imagenes de PARAMETRIC ##################################
         boton_uno = tk.Button(filaUno, text= "1", font = numero_size, width = ancho_boton, 
             command = lambda: seleccionEscaneo(boton_uno, reset= True ) )
         boton_uno.pack(side = tk.LEFT, padx = espacio_botonx, pady = espacio_botony)
@@ -79,31 +129,31 @@ def iniciar():
         boton_cuatro.pack(side = tk.LEFT, padx = espacio_botonx, pady = espacio_botony)
 
 
-        ###Botón ALL: habilita todos los botones de selección ##################################
-        boton_all = tk.Button(ventanaPrincipal, text= "ALL", font =  ("arial", 25), width = 10, bg = "SeaGreen1",
+        ###Boton ALL: habilita todos los botones de seleccion ##################################
+        boton_all = tk.Button(ventanaPrincipal, text= "ALL", font =  ("arial", sizeDic["BotonesLadosSize"]), width = 10, bg = "SeaGreen1",
             command = lambda: seleccionEscaneo(all = True, reset= True ) )
-        boton_all.place(x = 20, y = 15)
-        ###Botón CLEAR: deshabilita todos los botones de selección ##################################
-        boton_clear = tk.Button(ventanaPrincipal, text= "CLEAR", font =  ("arial", 25), width = 10, bg = "SkyBlue1",
+        boton_all.place(x = sizeDic["BotonAllX"], y = sizeDic["BotonAllY"])
+        ###Boton CLEAR: deshabilita todos los botones de seleccion ##################################
+        boton_clear = tk.Button(ventanaPrincipal, text= "CLEAR", font =  ("arial", sizeDic["BotonesLadosSize"]), width = 10, bg = "SkyBlue1",
             command = lambda: seleccionEscaneo(clear = True, reset= True))
-        boton_clear.place(x = 570, y = 15)
-        ###Botón CONF: modo soporte, para configuración del programa, usar teclado o teclas ##################################
-        boton_conf = tk.Button(ventanaPrincipal, text= "CONF", font =  ("arial", 25), width = 10, bg = "grey",
+        boton_clear.place(x = sizeDic["BotonClearX"], y = sizeDic["BotonClearY"])
+        ###Boton CONF: modo soporte, para configuracion del programa, usar teclado o teclas ##################################
+        boton_conf = tk.Button(ventanaPrincipal, text= "CONF", font =  ("arial", sizeDic["BotonesLadosSize"]), width = 10, bg = "grey",
             command = askPassword )
-        boton_conf.place(x = 20, y = 100)
-        ###Botón OK: para cerrar ventana emergente. Llama a función que envía un dato por com serial al arduino para enviar un Enter ####
-        boton_ok = tk.Button(ventanaPrincipal, text= "OK", font =  ("arial", 25), width = 10, height = 2,bg = "SkyBlue1",
+        #boton_conf.place(x = sizeDic["BotonConfX"], y = sizeDic["BotonConfY"])
+        ###Boton OK: para cerrar ventana emergente. Llama a funcion que envia un dato por com serial al arduino para enviar un Enter ####
+        boton_ok = tk.Button(ventanaPrincipal, text= "OK", font =  ("arial", sizeDic["BotonesLadosSize"]), width = 10, height = 2,bg = "SkyBlue1",
             command = lambda: enviarDatos("OK"))
-        boton_ok.place(x = 570, y = 80)
+        boton_ok.place(x = sizeDic["BotonOKX"], y = sizeDic["BotonOKY"])
 
 
         serialFrame = tk.Frame(ventanaPrincipal)
-        serialFrame.place(x = 50, y = 190)
+        serialFrame.place(x = sizeDic["CamposerialX"], y = sizeDic["CamposerialY"])
 
-        serial_label = tk.Label(serialFrame, text = "SERIAL", font = ("arial", 20))
+        serial_label = tk.Label(serialFrame, text = "SERIAL", font = ("arial", sizeDic["SerialLabelFontSize"]))
         serial_label.pack()
 
-        datos_entrada = tk.Entry(serialFrame, width = 40, font = ("arial", 20))
+        datos_entrada = tk.Entry(serialFrame, width = 40, font = ("arial", sizeDic["SerialInputFontSize"]))
         datos_entrada.pack(side = tk.LEFT)
         datos_entrada.focus()
         datos_entrada.bind('<Return>', lambda event: retenerSeriales(event, datos_entrada.get()))
@@ -112,14 +162,27 @@ def iniciar():
 
 
         respuestaFrame = tk.Frame(ventanaPrincipal)
-        respuestaFrame.place(x = 20, y = 270)
+        respuestaFrame.place(x = sizeDic["CamporespuestaX"], y = sizeDic["CamporespuestaY"])
 
-        respuesta_label = tk.Label(respuestaFrame, text = "RESPUESTA", font = ("arial", 15))
+        respuesta_label = tk.Label(respuestaFrame, text = "RESPUESTA", font = ("arial", sizeDic["RespuestaLabelFontSize"]))
         respuesta_label.pack()
 
-        campo_informacion = tk.Text(respuestaFrame, width = 75, height = 7, font =("arial", 14))
+        campo_informacion = tk.Text(respuestaFrame, width =  75, height = 7, font =("arial", sizeDic["RespuestaFontSize"]))
         campo_informacion["state"] = "disabled"
         campo_informacion.pack()
+        #Obtencion de IP Adress
+        hostname=socket.gethostname() 
+        ipaddress = socket.gethostbyname(hostname)
+
+        appInfoFrame = tk.Frame(respuestaFrame)
+        appInfoFrame.pack()
+        
+        ipLabel = tk.Label(appInfoFrame, text = "[IP:"+ipaddress+"]", font= ("arial", sizeDic["AppInfoFontSize"]), fg = "grey")
+        ipLabel.pack(side = tk.LEFT, padx= sizeDic["EspacioAppInfoX"])
+
+        versionLabel = tk.Label(appInfoFrame, text = "[V"+_version_+"]", font= ("arial", sizeDic["AppInfoFontSize"]), fg = "grey")
+        versionLabel.pack(side = tk.LEFT, padx= sizeDic["EspacioAppInfoX"])
+
         ### Configuro los botones en color verde, que el programa entiende como habilitados
         boton_uno["bg"] = boton_dos["bg"] = boton_tres["bg"] = boton_cuatro["bg"] = "green"
     except Exception as e:
@@ -180,7 +243,7 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
             datos_entrada["state"] = "disabled"
         else:
             datos_entrada["state"] = "normal"
-        #print(cantidad)
+        ##print(cantidad)
 
         texto_seleccion = "0" + "/" + str (cantidad)
         cantidad_seleccion["text"] = texto_seleccion
@@ -197,7 +260,7 @@ def seleccionEscaneo(objeto = False, reset = False, all = False, clear = False, 
             if error == 1:
                 datos_entrada.focus()
                 campo_informacion["state"] = "normal"
-                campo_informacion.insert(tk.INSERT, "Una o más de las unidades no lleva el flujo correcto. Verifica el historial" )
+                campo_informacion.insert(tk.INSERT, "Una o mas de las unidades no lleva el flujo correcto. Verifica el historial" )
                 campo_informacion["bg"] = "red"
                 campo_informacion["state"] = "disabled"
                 error = 0
@@ -213,7 +276,7 @@ def timerFunc(opcionTimer):
             seleccionEscaneo(reset=1)
         if  opcionTimer == "cerrar": 
             cerrarVentana()
-            seleccionEscaneo(mensaje="Se agotó tiempo de espera en confirmación")
+            seleccionEscaneo(mensaje="Se agoto tiempo de espera en confirmacion")
     except Exception as e:
         escribirLogFallas("timerFunc(): " + str(e))
 
@@ -252,7 +315,12 @@ def retenerSeriales(event, serial):
                 datos_entrada.delete('0', 'end')
                 
                 try:
-                    if len(serial.split(",")[1]) > 6:
+                    if not "," in serial:
+                        if modelo != "" and modelo != serial[0: serial.rindex("-")]:
+                            seleccionEscaneo(reset=1, mensaje = "Uno de los seriales no pertenece al mismo modelo.\n Modelos:\n- " + modelo + ":\n-"+ serial.split(",")[0])
+                            return
+                        modelo = serial[0: serial.rindex("-")]
+                    elif len(serial.split(",")[1]) > 6:
                         if modelo != "" and modelo != serial.split(",")[0]:
                             seleccionEscaneo(reset=1, mensaje = "Uno de los seriales no pertenece al mismo modelo.\n Modelos:\n- " + modelo + ":\n-"+ serial.split(",")[0])
                             return
@@ -264,11 +332,12 @@ def retenerSeriales(event, serial):
                             seleccionEscaneo(reset=1, mensaje = "Uno de los seriales no pertenece al mismo modelo.\n Modelos: " + modelo + ", "+ serial[0: serial.rindex("-")])
                             return
                         modelo = serial[0: serial.rindex("-")]
-                except: 
-                    messagebox.showinfo(title="ERROR", message="Serial no valido: "+ serial +"\n" + "Asegúrese de escanear el serial 2D")
+                except Exception as e: 
+                    messagebox.showinfo(title="ERROR", message="Serial no valido: "+ serial +"\n" + "Asegurese de escanear el serial 2D")
                     seleccionEscaneo(reset=1)
+                    print(e)
                     return
-                print(modelo)
+                #print(modelo)
                 if len(serialesArr) == cantidad:
                     tiempoReinicio.cancel()
                     mensaje = ""
@@ -298,6 +367,8 @@ def getGolden(array):
 
     try: 
         isGolden = 0
+        isRegistered = 0
+        preventFlag = 0
 
 
         url = "http://mxgdlm0webte02/OkToTesterWebServiceInterface/OkToTesterWebServiceInterface.asmx"
@@ -325,9 +396,21 @@ def getGolden(array):
         for i in array:
             if re.search(i, goldentxt):
                 isGolden = 1
+                if escribirLeerMasterDeGolden(i) != False and preventFlag == 0:
+                    isRegistered = 1
+                    serialesMasterArray.append(escribirLeerMasterDeGolden(i))
+                else:
+                    isRegistered = 0
+                    preventFlag = 1
+                
         
-        print(isGolden)
-        toMaster(array, isGolden, 0)
+        #print(isGolden)
+        if isRegistered == 1 and len(array) == len(serialesMasterArray):
+            #print(array)
+            #print(serialesMasterArray)
+            okToTest(array, serialesMasterArray, isGolden, 0)
+        else:
+            toMaster(array, isGolden, 0)
 
 
         
@@ -364,7 +447,7 @@ def toMaster(serial_2dArray, isGolden = 0, contador = 0):
             xmlmes2d = ElementTree.fromstring(txtmes2)
 
             serialrespuesta = xmlmes2d[0][0][0][0][1].text
-            #print(xmlmes2d[0][0][0][0][1].text)
+            ##print(xmlmes2d[0][0][0][0][1].text)
 
         except:    
             
@@ -385,17 +468,16 @@ def toMaster(serial_2dArray, isGolden = 0, contador = 0):
 
             response = requests.post(url, data = body, headers = headers)
 
-
             xmlmes2d = ElementTree.fromstring(response.text)
         
             serialrespuesta = xmlmes2d[0][0][0].text
 
         serialesMasterArray.append(serialrespuesta)
-
+        escribirLeerMasterDeGolden(serial_2dArray[contador], serialrespuesta)
 
         if serialrespuesta == "Serial Linked Not Founded" and filtro == 0:
 
-            mensajeError ="Serial no valido: "+ serial_2dArray[contador] + " Asegúrese de escanear el serial 2D\n"
+            mensajeError ="Serial no valido: "+ serial_2dArray[contador] + " Asegurese de escanear el serial 2D\n"
             filtro = 1
             
 
@@ -406,7 +488,7 @@ def toMaster(serial_2dArray, isGolden = 0, contador = 0):
                 seleccionEscaneo(mensaje = "[MODELO: " + modelo + "]\n" + mensajeError)
                 return
             else: 
-                print("Hola estoy aqui")
+                #print("Hola estoy aqui")
                 okToTest(serial_2dArray, serialesMasterArray, isGolden, 0)
         else: 
             
@@ -417,14 +499,15 @@ def toMaster(serial_2dArray, isGolden = 0, contador = 0):
 
 def okToTest(serial_2dArray, serial_masterArray, isGolden, contador):
     try:
-        print(serial_masterArray[contador])
-        print(serial_2dArray[contador])
+        #print(serial_masterArray[contador])
+        #print(serial_2dArray[contador])
         global  error, cantidadPasoFinal, mensaje, modelo, isGoldenGlobal
-        
+        #print(serial_masterArray)
         isGoldenGlobal = isGolden
-        #print(serial_2d + " " + serial_master)
+        ##print(serial_2d + " " + serial_master)
         
-        url = "http://mxgdlm0tis01/MES-TIS/tis.asmx"
+        #url = "http://mxgdlm0tis01/MES-TIS/tis.asmx"
+        url = "https://mes-tis.gdl.corp.jabil.org:1010/MES-TIS/"
 
         headers = {"Content-Type" : "application/soap+xml; charset=utf-8"}
 
@@ -437,9 +520,9 @@ def okToTest(serial_2dArray, serial_masterArray, isGolden, contador):
         </soap12:Body>
         </soap12:Envelope>
         """
-
+        #print(serial_masterArray[contador])
         try:
-            response = requests.post(url, data = body, headers = headers)
+            response = requests.post(url, data = body, headers = headers, verify = False)
             txtmes = response.text 
             txtmes2 = txtmes.replace("&lt;", "<").replace("&gt;", ">")
             xmlmes = ElementTree.fromstring(txtmes2)
@@ -451,7 +534,7 @@ def okToTest(serial_2dArray, serial_masterArray, isGolden, contador):
             
 
             isTimeOK = testtime(tiempoprueba)
-            #print(isTimeOK)
+            ##print(isTimeOK)
 
         
             if isGolden == 1:
@@ -468,39 +551,42 @@ def okToTest(serial_2dArray, serial_masterArray, isGolden, contador):
                     respuesta_programa = "Se puede probar"
                     campo_informacion["bg"] = "white"
                 else:
-                    if isTimeOK[2] == False:
-                        respuesta_programa = "Necesario: "+isTimeOK[0].strip()+" min. Se probó hace: " + isTimeOK[1] + " min"
+                    if isTimeOK[2] == False and status != "Pass":
+                        respuesta_programa = "Necesario: "+isTimeOK[0].strip()+" min. Se probo hace: " + isTimeOK[1] + " min"
                     else:
                         if status == "Fail":
                             respuesta_programa = "Unidad fallada en paso: " + paso
                         else:
-                            respuesta_programa = "Último dato: " + paso
+                            respuesta_programa = "ultimo dato: " + paso
                     error = 1
                 
-                if revisarSerialesBloqueados(serial_2dArray[contador]) == 0:
-                    respuesta_programa =  "Esta unidad ya fue escaneada. Debe esperar 10 min para volver a probarla"
-                    error = 1
+                # if revisarSerialesBloqueados(serial_2dArray[contador]) == 0:
+                #     respuesta_programa =  "Esta unidad ya fue escaneada. Debe esperar 10 min para volver a probarla"
+                #     error = 1
             
 
             #respuesta_historial =  paso + " " + status 
             mensaje += serial_2dArray[contador] + " " + respuesta_programa + "\n"
             
             contador = contador + 1
-            print(contador)
+            #print(contador)
             if contador  == cantidad:
                 
                 seleccionEscaneo(mensaje = "[MODELO: " + modelo + "]\n" + mensaje)
             else:
+                #print(contador)
                 okToTest(serial_2dArray, serialesMasterArray, isGolden, contador)
                 
 
         except Exception as e:
-            messagebox.showinfo(title="ERROR", message="Ocurrió un error\n Verifique el serial. " + str(e) )
+            messagebox.showinfo(title="ERROR", message="Ocurrio un error\n Verifique el serial. " + str(e) )
             datos_entrada["state"] = "normal"
+            
             seleccionEscaneo(reset = 1)
 
     except Exception as e:
         escribirLogFallas("okToTest(): " + str(e))        
+        print(e)
 
 def confirmacion(mensaje):
     try: 
@@ -519,27 +605,27 @@ def confirmacion(mensaje):
 
 
         labeldb = tk.Label(ventanaConfirmar, image = imgdb)
-        labeldb.place(x = 220, y = 90)
+        labeldb.place(x = sizeDic["FixtureX"], y = sizeDic["FixtureY"])
 
 
         btnConfirmar = tk.Button(ventanaConfirmar, text = "LISTO",activebackground = "green" ,command = lambda x = mensaje: enviarDatos(x, 1), font = ("arial", 20), bg = "green", width = 10, height = 8)
-        btnConfirmar.place(x = 580, y = 80)
+        btnConfirmar.place(x = sizeDic["BotonListoX"], y = sizeDic["BotonListoY"])
         btnCancelar = tk.Button(ventanaConfirmar, text = "CANCELAR",activebackground = "red", command = cerrarVentana, font = ("arial", 20), bg = "red", width = 10, height = 8)
-        btnCancelar.place(x = 10, y = 80)
-        ventanaPrincipal.mainloop()
+        btnCancelar.place(x = sizeDic["BotonCancelarX"], y = sizeDic["BotonCancelarY"])
+        #ventanaPrincipal.mainloop()
     except Exception as e:
         escribirLogFallas("confirmacion(): " + str(e))    
 
 def enviarDatos(datos, confirmacion = 0):
     try:
-        # ser = serial.Serial('/dev/ttyAMA0',9600)  
-        # ser.write(datos.encode())
-        # ser.close()
+        ser = serial.Serial('/dev/ttyS0',9600)  
+        ser.write(datos.encode())
+        ser.close()
         datos_entrada.focus()
         if confirmacion == 1:
             cerrarVentana()
-            print("IsGoldenGlobal" + str(isGoldenGlobal))
-            #print("GoldenGLobal = " + str(isGoldenGlobal))
+            #print("IsGoldenGlobal" + str(isGoldenGlobal))
+            ##print("GoldenGLobal = " + str(isGoldenGlobal))
             if isGoldenGlobal == 0:
                 bloquearSeriales()
     except Exception as e:
@@ -644,7 +730,7 @@ def panelDeControl():
         modoEBtn = tk.Button(generalFrame, text = modoESel, width = 3, font = letraSizeGeneral)
         modoEBtn.grid(column = 2, row = 1)
 
-        bloqueoLabel = tk.Label(generalFrame, text = "BLOQUEAR SELECCIÓN ", font = letraSizeGeneral)
+        bloqueoLabel = tk.Label(generalFrame, text = "BLOQUEAR SELECCIoN ", font = letraSizeGeneral)
         bloqueoLabel.grid(column = 1, row = 2)
         bloqueoBtn = tk.Button(generalFrame, text = bloqueoSel, width = 3, font = letraSizeGeneral)
         bloqueoBtn.grid(column = 2, row = 2)
@@ -724,13 +810,12 @@ def initConf():
         try:
             archivoconf = open('conf.conf', 'r')
         except: 
-            archivoconf = open('/home/pi/Documents/oktotest_pmc/conf.conf', 'r')
+            archivoconf = open('/oktotest_pmc/conf.conf', 'r')
         textosBtn = []
         while True:
-            # Get next line from file
             line = archivoconf.readline()
             if re.search("=1", line):
-                textosBtn.append("SÍ")
+                textosBtn.append("Si")
             else:
                 textosBtn.append("NO")
 
@@ -763,11 +848,11 @@ def testtime(tiempo):
         duracionsegundos = duracion.total_seconds()
         duracionminutos = duracionsegundos/60
 
-        print(duracionminutos)
+        #print(duracionminutos)
         try:
             archivotexto = open('testtime.txt', 'r')
         except: 
-            archivotexto = open('/home/pi/Documents/oktotest_pmc/testtime.txt', 'r')
+            archivotexto = open('/oktotest_pmc/testtime.txt', 'r')
 
         resultado = []
         while True:
@@ -791,39 +876,39 @@ def testtime(tiempo):
     except Exception as e:
         escribirLogFallas("testtime(): " + str(e))
 
-def revisarSerialesBloqueados(serial):
-    try:
-        puedeProbarse = 1
+# def revisarSerialesBloqueados(serial):
+#     try:
+#         puedeProbarse = 1
         
-        try:
-            ruta = "serialesbloqueados.txt"
-            listaBloqueadostxt = open(ruta, "r")
-        except: 
-            ruta = "/home/pi/Documents/oktotest_pmc/serialesbloqueados.txt"
-            listaBloqueadostxt = open(ruta, "r")
+#         try:
+#             ruta = "serialesbloqueados.txt"
+#             listaBloqueadostxt = open(ruta, "r")
+#         except: 
+#             ruta = "/oktotest_pmc/serialesbloqueados.txt"
+#             listaBloqueadostxt = open(ruta, "r")
 
         
-        #listaBloqueadostxt.seek(0)
-        while True:
-            linea = listaBloqueadostxt.readline()
-            if not linea:
-                break
+#         #listaBloqueadostxt.seek(0)
+#         while True:
+#             linea = listaBloqueadostxt.readline()
+#             if not linea:
+#                 break
             
-            if re.search(serial, linea):
+#             if re.search(serial, linea):
                 
-                diferencia =  datetime.now() - datetime.fromisoformat(linea.split("#T")[1].strip())
-                diferenciasegundos = diferencia.total_seconds()
-                diferenciaminutos = int(diferenciasegundos/60)
-                #print(diferenciaminutos)
-                #print(diferenciaminutos<10)
-                if diferenciaminutos<10:
-                    puedeProbarse = 0
+#                 diferencia =  datetime.now() - datetime.fromisoformat(linea.split("#T")[1].strip())
+#                 diferenciasegundos = diferencia.total_seconds()
+#                 diferenciaminutos = int(diferenciasegundos/60)
+#                 ##print(diferenciaminutos)
+#                 ##print(diferenciaminutos<10)
+#                 if diferenciaminutos<10:
+#                     puedeProbarse = 0
 
         
-        listaBloqueadostxt.close
-        return puedeProbarse
-    except Exception as e:
-        escribirLogFallas("revisarSerialesBloqueados(): " + str(e))
+#         listaBloqueadostxt.close
+#         return puedeProbarse
+#     except Exception as e:
+#         escribirLogFallas("revisarSerialesBloqueados(): " + str(e))
 
 def bloquearSeriales():
     try:
@@ -833,7 +918,7 @@ def bloquearSeriales():
             ruta = "serialesbloqueados.txt"
             listaBloqueadostxt = open(ruta, "r")
         except: 
-            ruta = "/home/pi/Documents/oktotest_pmc/serialesbloqueados.txt"
+            ruta = "/oktotest_pmc/serialesbloqueados.txt"
             listaBloqueadostxt = open(ruta, "r")
         #os.remove(ruta)
         arrayListaBloqueados = listaBloqueadostxt.readlines()
@@ -842,7 +927,7 @@ def bloquearSeriales():
         listaBloqueadostxt = open(ruta, "w")
         for serial in seriales2DArray:
             arrayListaBloqueados.append(serial+" #T"+ str(datetime.now())+"\n" )
-            #print(arrayListaBloqueados)
+            ##print(arrayListaBloqueados)
             if len(arrayListaBloqueados) > 10:
                 arrayListaBloqueados.pop(1)
         listaBloqueadostxt.writelines(arrayListaBloqueados)
@@ -850,17 +935,53 @@ def bloquearSeriales():
     except Exception as e:
         escribirLogFallas("bloquearSeriales(): " + str(e))
 
+def escribirLeerMasterDeGolden(serial2DG, serialMasterG = ""):
+    flagG = 0
+    try:
+        ruta = "serialesMasterGolden.txt"
+    except: 
+        ruta = "/oktotest_pmc/serialesMasterGolden.txt"
+    if serialMasterG == "":
+        try: 
+            masterGFSO = open(ruta, "r")
+        except:
+            masterGFSO = open(ruta, "x")
+            masterGFSO.close()
+            return
+
+        while True:
+                linea = masterGFSO.readline()
+                if not linea:
+                    break
+
+                if re.search(serial2DG, linea):
+
+                    serialMasterG = linea.split(":")[1].strip()
+                    flagG = 1
+                    break
+        if flagG == 1:
+            masterGFSO.close()
+            return serialMasterG
+        else:
+            masterGFSO.close()
+            return False
+    else:
+        masterGFSO = open(ruta, "a")
+        masterGFSO.write(serial2DG+":"+serialMasterG+"\n")
+        masterGFSO.close()
+
 def escribirLogFallas(error):
     
     try:
         ruta = "log.txt"
         log = open(ruta, "a")
     except: 
-        ruta = "/home/pi/Documents/oktotest_pmc/log.txt"
+        ruta = "/oktotest_pmc/log.txt"
+        log = open(ruta, "a")
 
     log.write(error + "   " + str(datetime.now()) + "\n")
     log.write("-----------------------------------------------------------------" + "\n")
-    log.close
+    log.close()
 
 iniciar()
 initConf()
@@ -869,3 +990,4 @@ seleccionEscaneo(reset=1)
 window.mainloop()
 
             
+

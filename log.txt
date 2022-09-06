@@ -1,0 +1,120 @@
+iniciar(): expected integer but got "80.64"   2022-05-12 12:45:39.423184
+-----------------------------------------------------------------
+limpiarCampo(): name 'campo_informacion' is not defined   2022-05-12 12:45:39.437147
+-----------------------------------------------------------------
+seleccionEscaneo(): name 'campo_informacion' is not defined   2022-05-12 12:45:39.439142
+-----------------------------------------------------------------
+iniciar(): expected integer but got "80.64"   2022-05-12 13:24:18.684887
+-----------------------------------------------------------------
+limpiarCampo(): name 'campo_informacion' is not defined   2022-05-12 13:24:18.697854
+-----------------------------------------------------------------
+seleccionEscaneo(): name 'campo_informacion' is not defined   2022-05-12 13:24:18.700845
+-----------------------------------------------------------------
+iniciar(): expected integer but got "80.64"   2022-05-12 13:24:45.574250
+-----------------------------------------------------------------
+limpiarCampo(): name 'campo_informacion' is not defined   2022-05-12 13:24:45.578241
+-----------------------------------------------------------------
+seleccionEscaneo(): name 'campo_informacion' is not defined   2022-05-12 13:24:45.583226
+-----------------------------------------------------------------
+iniciar(): 'CamporespuestaSizeY'   2022-05-12 13:41:59.511667
+-----------------------------------------------------------------
+limpiarCampo(): name 'campo_informacion' is not defined   2022-05-12 13:41:59.517650
+-----------------------------------------------------------------
+seleccionEscaneo(): name 'campo_informacion' is not defined   2022-05-12 13:41:59.521643
+-----------------------------------------------------------------
+iniciar(): 'CamporespuestaSizeY'   2022-05-12 13:42:31.721073
+-----------------------------------------------------------------
+limpiarCampo(): name 'campo_informacion' is not defined   2022-05-12 13:42:31.726064
+-----------------------------------------------------------------
+seleccionEscaneo(): name 'campo_informacion' is not defined   2022-05-12 13:42:31.729052
+-----------------------------------------------------------------
+iniciar(): expected integer but got "80.64"   2022-05-12 13:45:23.677886
+-----------------------------------------------------------------
+limpiarCampo(): name 'campo_informacion' is not defined   2022-05-12 13:45:23.683872
+-----------------------------------------------------------------
+seleccionEscaneo(): name 'campo_informacion' is not defined   2022-05-12 13:45:23.687862
+-----------------------------------------------------------------
+limpiarCampo(): name 'campo_informacion' is not defined   2022-05-12 13:45:25.545166
+-----------------------------------------------------------------
+seleccionEscaneo(): name 'campo_informacion' is not defined   2022-05-12 13:45:25.547132
+-----------------------------------------------------------------
+limpiarCampo(): name 'campo_informacion' is not defined   2022-05-12 13:45:25.944851
+-----------------------------------------------------------------
+seleccionEscaneo(): name 'campo_informacion' is not defined   2022-05-12 13:45:25.946817
+-----------------------------------------------------------------
+iniciar(): expected integer but got "83.04"   2022-05-13 09:07:20.820947
+-----------------------------------------------------------------
+limpiarCampo(): name 'campo_informacion' is not defined   2022-05-13 09:07:20.832916
+-----------------------------------------------------------------
+seleccionEscaneo(): name 'campo_informacion' is not defined   2022-05-13 09:07:20.836904
+-----------------------------------------------------------------
+iniciar(): expected integer but got "83.04"   2022-05-13 09:09:27.168884
+-----------------------------------------------------------------
+limpiarCampo(): name 'campo_informacion' is not defined   2022-05-13 09:09:27.172874
+-----------------------------------------------------------------
+seleccionEscaneo(): name 'campo_informacion' is not defined   2022-05-13 09:09:27.176864
+-----------------------------------------------------------------
+iniciar(): expected integer but got "24.912"   2022-05-13 09:21:01.921725
+-----------------------------------------------------------------
+limpiarCampo(): name 'campo_informacion' is not defined   2022-05-13 09:21:01.926713
+-----------------------------------------------------------------
+seleccionEscaneo(): name 'campo_informacion' is not defined   2022-05-13 09:21:01.931699
+-----------------------------------------------------------------
+iniciar(): expected integer but got "40.5"   2022-05-13 10:21:02.873453
+-----------------------------------------------------------------
+limpiarCampo(): name 'campo_informacion' is not defined   2022-05-13 10:21:02.885422
+-----------------------------------------------------------------
+seleccionEscaneo(): name 'campo_informacion' is not defined   2022-05-13 10:21:02.888413
+-----------------------------------------------------------------
+enviarDatos(): could not open port '/dev/ttyS0': FileNotFoundError(2, 'The system cannot find the path specified.', None, 3)   2022-05-13 12:22:45.820651
+-----------------------------------------------------------------
+enviarDatos(): could not open port '/dev/ttyS0': FileNotFoundError(2, 'The system cannot find the path specified.', None, 3)   2022-05-18 08:58:07.496875
+-----------------------------------------------------------------
+getGolden(): okToTest() missing 2 required positional arguments: 'isGolden' and 'contador'   2022-05-18 09:49:03.558550
+-----------------------------------------------------------------
+cerrarVentanaPassword(): name 'ventanaPassword' is not defined   2022-05-18 09:49:45.987539
+-----------------------------------------------------------------
+okToTest(): list index out of range   2022-05-18 09:59:31.835030
+-----------------------------------------------------------------
+okToTest(): list index out of range   2022-05-18 10:07:26.486070
+-----------------------------------------------------------------
+okToTest(): list index out of range   2022-05-18 10:09:05.442219
+-----------------------------------------------------------------
+okToTest(): list index out of range   2022-05-18 10:13:12.829987
+-----------------------------------------------------------------
+okToTest(): list index out of range   2022-05-18 10:13:46.038829
+-----------------------------------------------------------------
+okToTest(): list index out of range   2022-05-18 10:19:59.752356
+-----------------------------------------------------------------
+okToTest(): list index out of range   2022-05-18 10:20:52.987304
+-----------------------------------------------------------------
+okToTest(): list index out of range   2022-05-18 11:30:18.766519
+-----------------------------------------------------------------
+enviarDatos(): could not open port '/dev/ttyS0': FileNotFoundError(2, 'The system cannot find the path specified.', None, 3)   2022-05-18 11:55:33.216061
+-----------------------------------------------------------------
+enviarDatos(): could not open port '/dev/ttyS0': FileNotFoundError(2, 'The system cannot find the path specified.', None, 3)   2022-05-28 09:50:15.783561
+-----------------------------------------------------------------
+enviarDatos(): could not open port '/dev/ttyS0': FileNotFoundError(2, 'The system cannot find the path specified.', None, 3)   2022-09-05 10:43:49.135236
+-----------------------------------------------------------------
+enviarDatos(): could not open port '/dev/ttyS0': FileNotFoundError(2, 'The system cannot find the path specified.', None, 3)   2022-09-05 10:43:55.140150
+-----------------------------------------------------------------
+enviarDatos(): could not open port '/dev/ttyS0': FileNotFoundError(2, 'The system cannot find the path specified.', None, 3)   2022-09-05 10:44:39.180772
+-----------------------------------------------------------------
+iniciar(): 'str' object has no attribute 'items'   2022-09-06 10:28:31.288504
+-----------------------------------------------------------------
+iniciar(): 'str' object has no attribute 'items'   2022-09-06 10:29:12.638889
+-----------------------------------------------------------------
+iniciar(): 'str' object has no attribute 'items'   2022-09-06 10:29:45.426278
+-----------------------------------------------------------------
+iniciar(): 'str' object has no attribute 'items'   2022-09-06 10:35:32.780022
+-----------------------------------------------------------------
+iniciar(): 'str' object has no attribute 'items'   2022-09-06 10:36:22.879455
+-----------------------------------------------------------------
+iniciar(): name 'appInfoFrame' is not defined   2022-09-06 10:37:34.819613
+-----------------------------------------------------------------
+iniciar(): 'str' object has no attribute 'items'   2022-09-06 10:37:53.546225
+-----------------------------------------------------------------
+iniciar(): 'str' object has no attribute 'items'   2022-09-06 10:38:43.786732
+-----------------------------------------------------------------
+iniciar(): 'str' object has no attribute 'items'   2022-09-06 10:38:58.789679
+-----------------------------------------------------------------
