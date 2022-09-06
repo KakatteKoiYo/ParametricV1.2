@@ -61,11 +61,11 @@ sizeDic = {
 #print(sizeDic["RespuestaFontSize"])
 
 try:
-    imgdb = ImageTk.PhotoImage(Image.open("imagen/fixture.png").resize((sizeDic["FixtureIMGSizeW"], sizeDic["FixtureIMGSizeH"])))
-    imgFlechaAr = ImageTk.PhotoImage(Image.open("imagen/up.png").resize((70, 70)))
-    imgFlechaAb = ImageTk.PhotoImage(Image.open("imagen/down.png").resize((70, 70)))
-    imgFlechaD = ImageTk.PhotoImage(Image.open("imagen/right.png").resize((70, 70)))
-    imgFlechaI = ImageTk.PhotoImage(Image.open("imagen/left.png").resize((70, 70)))
+    imgdb = ImageTk.PhotoImage(Image.open("fixture.png").resize((sizeDic["FixtureIMGSizeW"], sizeDic["FixtureIMGSizeH"])))
+    imgFlechaAr = ImageTk.PhotoImage(Image.open("up.png").resize((70, 70)))
+    imgFlechaAb = ImageTk.PhotoImage(Image.open("down.png").resize((70, 70)))
+    imgFlechaD = ImageTk.PhotoImage(Image.open("right.png").resize((70, 70)))
+    imgFlechaI = ImageTk.PhotoImage(Image.open("left.png").resize((70, 70)))
 except:
     imgdb = ImageTk.PhotoImage(Image.open("/oktotest_pmc/imagen/fixture.png").resize((sizeDic["FixtureIMGSizeX"], sizeDic["FixtureIMGSizeH"])))
     imgFlechaAr = ImageTk.PhotoImage(Image.open("/oktotest_pmc/imagen/up.png").resize((70, 70)))
