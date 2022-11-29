@@ -320,7 +320,7 @@ def retenerSeriales(event, serial):
                             seleccionEscaneo(reset=1, mensaje = "Uno de los seriales no pertenece al mismo modelo.\n Modelos:\n- " + modelo + ":\n-"+ serial.split(",")[0])
                             return
                         modelo = serial[0: serial.rindex("-")]
-                    elif len(serial.split(",")[1]) > 6:
+                    elif len(serial.split(",")[1]) > 11:
                         if modelo != "" and modelo != serial.split(",")[0]:
                             seleccionEscaneo(reset=1, mensaje = "Uno de los seriales no pertenece al mismo modelo.\n Modelos:\n- " + modelo + ":\n-"+ serial.split(",")[0])
                             return
@@ -337,7 +337,7 @@ def retenerSeriales(event, serial):
                     seleccionEscaneo(reset=1)
                     print(e)
                     return
-                #print(modelo)
+                print(modelo)
                 if len(serialesArr) == cantidad:
                     tiempoReinicio.cancel()
                     mensaje = ""
@@ -775,7 +775,6 @@ def panelDeControl():
         btnAr = tk.Button(flechasFrame, image = imgFlechaAr, command = lambda : enviarDatos("UP"))
         btnAr.grid(column = 2, row = 1)
 
-        
         btnI = tk.Button(flechasFrame, image = imgFlechaI, command = lambda : enviarDatos("LEFT"))
         btnI.grid(column = 1, row = 2)
         btnD = tk.Button(flechasFrame, image = imgFlechaD, command = lambda : enviarDatos("RIGHT"))
